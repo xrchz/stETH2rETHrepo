@@ -1,0 +1,36 @@
+
+import React, { useState, useEffect } from "react";
+import classes from './app.module.css';
+import Table from './components/table/Table.jsx';
+import Title from './components/title/Title.jsx';
+import ContractTag from './components/contractTag/ContractTag';
+import Main from "./components/Main/Main.tsx";
+
+
+
+function App() {
+
+  return (
+    <div className={classes.app}>
+      <Title />
+
+     <Main/>
+
+
+
+
+
+
+
+      <ContractTag />
+
+      <div className={classes.tableCont}>
+        <Table />
+
+      </div>
+
+    </div>
+  );
+}
+
+export default App;

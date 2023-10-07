@@ -1,0 +1,53 @@
+.container {
+    width: 100%;
+   
+    height: auto;
+   
+    
+    transition: all 1s ease-in-out;
+   
+  
+   
+}
+
+table {
+    padding: 0!important;
+    
+}
+
+
+tr:nth-child(even) {
+    background: #efeeee;
+}
+
+
+td, th {
+    padding: 1vw;
+   
+    text-align: center;
+    font-size: 15px;
+    border: 0!important;
+    margin: 0!important;
+   
+}
+
+
+#eventName {
+    background: #f8ec85;
+    border:0.25px #222 solid;
+
+}
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
