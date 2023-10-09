@@ -2,11 +2,12 @@
     height: auto;
     width: 100%;
     padding-top: 2vh;
-    padding-bottom: 6vh;
+    padding-bottom: 4vh;
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
+
   
 
 }
@@ -47,15 +48,35 @@
     padding-top: 2vh;
 }
 
+.container > p > a  {
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.container > p > a:hover {
+    color: green;
+
+}
+
 
 @media (max-width: 992px) {
+
+    .container {
+
+        padding-bottom: 2vh;
+
+    }
    .container > p {
     width: 80%;
+    text-align: center;
+    
    }
 
    .container > h2 {
    
     font-size: 50px;
+
+   
 
 }
 
@@ -66,4 +87,17 @@
     
 }
         
+  }
+
+
+  @media (max-width: 600px) {
+
+    .container > p {
+
+        font-size: 18px;
+
+
+
+    }
+
   }

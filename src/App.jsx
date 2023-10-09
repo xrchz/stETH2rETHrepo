@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import classes from './app.module.css';
-import Table from './components/table/Table.jsx';
+import Table from './components/table/Table.tsx';
 import Title from './components/title/Title.jsx';
 import ContractTag from './components/contractTag/ContractTag';
 import Main from "./components/Main/Main.tsx";
@@ -11,6 +11,8 @@ import Main from "./components/Main/Main.tsx";
 function App() {
 
   return (
+   
+    
     <div className={classes.app}>
       <Title />
 
@@ -30,6 +32,7 @@ function App() {
       </div>
 
     </div>
+   
   );
 }
 

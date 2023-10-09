@@ -11,7 +11,7 @@
   .wrapper {
   
     height: auto;
-    width: 90%;
+    width: 93%;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -31,6 +31,7 @@
     align-items: center;
     justify-content: flex-start;
     border: 0.5px solid #222;
+    background: #fff;
     gap: 1rem;
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
@@ -56,26 +57,46 @@
     word-wrap: break-word;
     width: 60%;
   }
+
+
   
-  .box > button {
+  .box >  button {
   
     background: rgb(21, 149, 77);
     color: #fff;
     font-weight: 200;
-    font-size: 18px;
+    font-size: 15px;
     text-transform: uppercase;
-    padding: 0.5vh 0.5vw;
+    padding: 10px;
     transition: all 0.2s ease-in-out;
     border: 0px;
   
   }
   
   .box > button:hover {
-    background: #222;
-    cursor: pointer;
+    background: #333 !important;
+    cursor: pointer !important;
+    color: #fff !important;
   
   
   }
+
+  .foundry {
+    background-color: rgb(30, 132, 124) !important;
+
+  }
+
+  .fakestETH {
+    background-color:  #fcea4f !important;
+    color: #222 !important;
+
+  }
+
+  .disconnect {
+    background-color: #fc804f!important;
+
+  }
+  
 
 
   .error {
@@ -107,10 +128,32 @@ align-items: center;
   .error2 > p , .error > p  {
     text-align: center;
   }
+
+
+  @media (max-width: 1750px) { 
+
+
+  .box > h3 {
+    font-size: 23px;
+  }
+  
+  .box > h5 {
+    font-size: 18px;
+    width: 70%;
+  }
+
+}
+
+
   
   
 
   @media (max-width: 1050px) {
+
+
+    .container {
+      padding-bottom: 1vh;
+    }
 
     .wrapper {
       flex-direction: column;
@@ -120,7 +163,8 @@ align-items: center;
       width: 80%;
       height: auto;
       justify-content: center;
-      padding: 2vh 0;
+      padding: 3vh 0;
+     
     }
 
     .box > h5 {
@@ -131,9 +175,7 @@ align-items: center;
       font-size: 23px;
     }
 
-    .box > button {
-      font-size: 17px;
-    }
+  
 
   
 
@@ -156,23 +198,26 @@ align-items: center;
 
   @media (max-width: 600px) {
 
+    .box {
+      font-size: 16px;
+    }
+
    
     .box > h5 {
-      font-size: 18px;
+      font-size: 17px;
     }
 
     .box > h3 {
       font-size: 20px;
     }
 
-    .box > button {
-      font-size: 17px;
-    }
 
     .box > input {
       width: 80%;
     }
 
+
+    
 
 
 
