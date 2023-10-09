@@ -19,8 +19,8 @@ const Table = () => {
 
 
   const client = createPublicClient({
-    chain: goerli,
-    transport: http( 'https://rpc.ankr.com/eth_goerli')
+    chain: mainnet,
+    transport: http('https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW')
   });
 
 
@@ -45,10 +45,10 @@ const Table = () => {
 
 
       const logs = await client.getContractEvents({
-        address: '0x8d69e9bd46d3234a43fac3861b2a591c23546ec2',
+        address: '0xfAaBbE302750635E3F918385a1aEb4A9eb45977a',
         abi: abi,
-        fromBlock: 18198548n,
-        toBlock: 18200553n
+        fromBlock: 18198548n
+        
       });
 
       const processedLogs = convertBigIntToJSON(logs);
