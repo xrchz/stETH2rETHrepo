@@ -50,11 +50,15 @@
 
 .container > p > a  {
     text-decoration: none;
+    color:rgb(30, 132, 124);
+    font-weight: 600;
     transition: all 0.2s ease-in-out;
 }
 
 .container > p > a:hover {
-    color: green;
+    color:   #222;
+    
+
 
 }
 
@@ -75,6 +79,7 @@
    .container > h2 {
    
     font-size: 50px;
+    
 
    
 

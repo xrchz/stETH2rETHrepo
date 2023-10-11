@@ -20,7 +20,7 @@ const Table = () => {
 
   const client = createPublicClient({
     chain: mainnet,
-    transport: http('https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW')
+    transport: http('http://127.0.0.1:8545')
   });
 
 
@@ -93,32 +93,32 @@ const Table = () => {
 
 
       <tr>
-        <th>Transaction Hash</th>
-        <th >Log Index</th>
-        <th>Event Type</th>
+      <th >Log Index</th>
+      <th>Event Type</th>
+        
+       
         <th>Ethereum (Deposit)</th>
         <th>stEth (Deposit)</th>
         <th>rEth (Returned)</th>
         <th>Sender</th>
+        <th>Transaction Hash</th>
+        
         <th>Block Number</th>
       </tr>
       {allTransactions?.map((trans, index) => (
 
 
         <tr key={"row" + index}>
-
-          <td >
-
-            {trans.transactionHash ? (
-              `${trans.transactionHash.slice(0, 13)}${trans.transactionHash.length > 13 ? '...' : ''}`
-            ) : ("")}
-          </td>
           <td >{trans.logIndex}</td>
-          <td id={classes.eventName}>{trans.eventName}</td>
+
+           <td id={classes.eventName}>{trans.eventName}</td>
+
+          
+         
 
           <td>{wei(trans.args[1])}</td>
           <td>{wei(trans.args[2])}</td>
-          <td>{trans.eventName === "Deposit"? wei(trans.args[3]) : "N/A"}
+          <td >{trans.eventName === "Deposit"? wei(trans.args[3]) : "N/A"}
           
           </td>
           <td>
@@ -130,7 +130,11 @@ const Table = () => {
 
 
           </td>
+          <td >
 
+            {trans.transactionHash}
+          </td>
+          
           <td >{trans.blockNumber}</td>
         </tr>
       ))}

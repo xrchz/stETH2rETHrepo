@@ -30,7 +30,7 @@ td, th {
     padding: 1vw;
    
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
     border: 0!important;
     margin: 0!important;
    
@@ -39,6 +39,7 @@ td, th {
 
 #eventName {
     background: #f8ec85;
+    font-weight: 300;
     border:0.25px #222 solid;
 
 }
@@ -49,7 +50,7 @@ td, th {
 
     td, th {
         
-        font-size: 16px;
+        font-size: 15px;
        
        
     }

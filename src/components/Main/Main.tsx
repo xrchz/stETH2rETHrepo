@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import classes from './main.module.css';
-import { Address, createPublicClient, http, publicActions, createWalletClient, walletActions, custom, parseEther,  formatEther } from 'viem';
+import { Address, createPublicClient, http, publicActions, createWalletClient, walletActions, custom, parseEther, formatEther } from 'viem';
 import { mainnet, goerli } from 'viem/chains';
 import "viem/window";
 import stETH2rETHabi from "../../abi/stETH2rETH.json"
@@ -51,6 +51,7 @@ function Main() {
     const [ETHBalance, setETHBalance] = useState<string | undefined>("")
     const [stETHBalance, setstETHBalance] = useState<string | undefined>("")
     const [finrETH, setFinrETH] = useState<boolean>(false);
+    const [noWallet, setNoWallet] = useState<boolean>(false);
 
 
     const [isReadyToApprove, setIsReadyToApprove] = useState(false);
@@ -63,40 +64,19 @@ function Main() {
     const rETHcontract = '0xae78736Cd615f374D3085123A210448E74Fc6393';
     const stETHcontract = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
 
+    const [wallet, setWallet] = useState(undefined);
+
+
     
 
 
-
-
-    const wallet = createWalletClient({
-        chain: goerli,
-        transport: custom(window.ethereum)
-    })
-
-
     const client = createPublicClient({
-        account,
 
-        chain: goerli,
-        transport: http('https://rpc.ankr.com/eth_goerli')
+        chain: mainnet,
+        transport: http('http://127.0.0.1:8545')
     })
         .extend(publicActions)
         .extend(walletActions)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -113,7 +93,7 @@ function Main() {
 
 
         const rETH = await client.readContract({
-            address: '0x178E141a0E3b34152f73Ff610437A7bf9B83267A',
+            address: rETHcontract,
             abi: rETHabi,
             functionName: 'balanceOf',
             args: [account]
@@ -122,7 +102,7 @@ function Main() {
         if (rETH >= estReth) {
             console.log("Enough rETH in contract");
             console.log("rETH CONTRACT balance:" + rETH)
-            setApproved(false);
+
 
         } else {
 
@@ -159,7 +139,7 @@ function Main() {
         const result = await client.estimateContractGas({
             abi: stETH2rETHabi,
             args: [stETH],
-            address: '0x8d69e9bd46d3234a43fac3861b2a591c23546ec2',
+            address: stETH2rETH,
             functionName: 'deposit',
             account,
             value: ETH
@@ -177,7 +157,7 @@ function Main() {
 
 
         const rETHAmount = await client.readContract({
-            address: '0x178E141a0E3b34152f73Ff610437A7bf9B83267A',
+            address: rETHcontract,
             abi: rETHabi,
             functionName: 'getRethValue',
             args: [TOTAL]
@@ -220,10 +200,10 @@ function Main() {
 
     const allowanceCheck = async () => {
         const allowance: BigInt = await client.readContract({
-            address: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
+            address: stETHcontract,
             abi: stethAbi,
             functionName: 'allowance',
-            args: [account, '0x8d69e9bd46d3234a43fac3861b2a591c23546ec2'],
+            args: [account, stETH2rETH],
             account,
         });
 
@@ -231,14 +211,13 @@ function Main() {
         console.log("Allowance:" + allowance)
         if (allowance < stETH) {
             setApproved(false);
+            setIsReadyToApprove(true);
 
 
 
-        } else {
 
 
-
-        }
+        } 
     }
 
     //FRESH TRANSACTION
@@ -251,11 +230,17 @@ function Main() {
         setStETHChecked(false)
         setETH(BigInt(0))
         setStETH(BigInt(0))
+        setStETHstring("");
+        setETHstring("");
         setNewTransactionBool(false);
         setFinalGas("");
         setEstReth("");
         setFinrETH(false);
         setGas("");
+        setIsReadyToApprove(false);
+        setErrorMessage2("")
+        setErrorMessage("")
+
     }
 
 
@@ -272,16 +257,25 @@ function Main() {
     const approvalCheck = async () => {
 
         setLoading(true)
-        const approval = await wallet.writeContract({
-            address: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
-            abi: stethAbi,
-            functionName: 'approve',
-            args: [stETH2rETH, stETH],
-            account,
-        })
-        console.log("Approval:" + approval)
 
-        setApprovalHash(approval)
+
+        try {
+            const approval = await wallet.writeContract({
+                address: stETHcontract,
+                abi: stethAbi,
+                functionName: 'approve',
+                args: [stETH2rETH, stETH],
+                account,
+            })
+            console.log("Approval:" + approval)
+
+            setApprovalHash(approval)
+
+        } catch (e) {
+            setLoading(false);
+            alert(e)
+        }
+
 
 
     }
@@ -328,10 +322,10 @@ function Main() {
         })
 
 
-
+if (wallet !== undefined) {
 
         const stETHResult = await wallet.writeContract({
-            address: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
+            address: stETHcontract,
             abi: stethAbi,
             functionName: 'submit',
             args: [account],
@@ -340,6 +334,8 @@ function Main() {
         })
 
         console.log("Fake stETH return:" + stETHResult)
+
+    }
 
 
 
@@ -360,21 +356,23 @@ function Main() {
 
 
         const balance = await client.readContract({
-            address: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
+            address: stETHcontract,
             abi: stethAbi,
             functionName: 'balanceOf',
             args: [account]
         })
 
-        if (stETH <= balance ) {
+        if (stETH <= balance) {
 
-            if( stETH !== BigInt(0)) {
-            setIsReadyToApprove(true);
-            }
+            console.log("You have sufficient stETH");
+            allowanceCheck();
+
+
 
 
         } else {
             setErrorMessage("You have insufficient stETH.")
+
 
         }
 
@@ -403,15 +401,20 @@ function Main() {
 
 
 
-        if (ETH <= balance) {
+        if (ETH <= balance && ETH > 0) {
             console.log("Balance is sufficient");
-            if(stETH === BigInt(0) && ETH !== BigInt(0)) {
+            if (ETHChecked && stETHstring === "") {
                 setApproved(true)
             }
 
 
         } else {
-            setErrorMessage2("You have insufficient ETH.")
+            if(ETHChecked) {
+                setErrorMessage2("You have insufficient ETH.")
+                setApproved(false)
+
+            }
+          
 
         }
 
@@ -431,7 +434,7 @@ function Main() {
 
 
         const rETHAmount = await client.readContract({
-            address: '0x178E141a0E3b34152f73Ff610437A7bf9B83267A',
+            address: rETHcontract,
             abi: rETHabi,
             functionName: 'balanceOf',
             args: [account]
@@ -465,20 +468,37 @@ function Main() {
 
     const Deposit = async () => {
 
-        setLoading(true)
-        const result = await wallet.writeContract(
-            {
-                account,
-                address: '0x8d69e9bd46d3234a43fac3861b2a591c23546ec2',
-                abi: stETH2rETHabi,
-                functionName: 'deposit',
-                args: [stETH],
-                value: ETH
 
-            }
-        )
-        setHash(result)
-        console.log("Result:" + result);
+        setLoading(true);
+        console.log("Eth at deposit:" + ETH)
+        console.log("stEth at deposit:" + stETH)
+
+
+        try {
+
+            const result = await wallet.writeContract(
+                {
+                    account,
+                    address: stETH2rETH,
+                    abi: stETH2rETHabi,
+                    functionName: 'deposit',
+                    args: [stETH],
+                    value: ETH
+
+                }
+            )
+            setHash(result)
+            console.log("Deposit Result:" + result);
+
+
+        } catch (e) {
+            setLoading(false);
+            alert(e);
+            console.log("DEPOSIT ERROR:" + e);
+        }
+
+
+
 
         //rETHBalance();
     }
@@ -522,11 +542,22 @@ function Main() {
         setLoading(true);
 
         try {
+           
+
+           const newWallet =  await createWalletClient({
+                chain: mainnet,
+                transport: custom(window.ethereum)
+            })
+
+            setWallet(newWallet);
+
             const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    
             setAccount(address)
             setLoading(false)
         } catch (e) {
             console.log("error in request", e);
+            alert("You must install an Ethereum Wallet to use the app")
             // location.reload();
         }
 
@@ -550,7 +581,24 @@ function Main() {
 
 
 
-        setAccount(undefined)
+        try {
+            await window.ethereum.request({
+                method: "eth_requestAccounts",
+                params: [{eth_accounts: {}}]
+            })
+    
+            setAccount(undefined)
+           await newTransaction();
+
+        } catch (e) {
+
+            alert(e)
+            
+
+        }
+
+       
+        
 
 
 
@@ -594,15 +642,9 @@ function Main() {
 
         console.log("CURRENT ETH:" + ETH)
 
-
-
         if (ETHChecked) {
             balanceCheck();
             getContractBalance();
-
-            
-
-
         }
         if (account !== undefined && initialised) {
 
@@ -615,50 +657,100 @@ function Main() {
         console.log("This is new ETh" + newETH)
 
 
-        if (evalString(newETH) === false && newETH !== "0" && newETH !== "0." && newETH !== "0.0") {
+        if (newETH === "") {
 
-            const EthCheck = parseEther(newETH);
-            console.log(EthCheck);
-
-            if (typeof EthCheck === 'bigint') {
-
-
+            setErrorMessage2("");
+            setETHChecked(false);
+            setETH(BigInt(0))
+            setApproved(false)
 
 
-                let finETH = bigIntToString(EthCheck)
-
-                let finStETH = bigIntToString(stETH)
-
-                let formatETH = wei(parseInt(finETH));
-                let formatStETH = wei(parseInt(finStETH));
-
-                let newTotal = formatETH + formatStETH
-                console.log("To see if ETH is above 1: " + newTotal);
+        }
+        else {
 
 
-                if (newTotal < 1) {
-
-                    setETHChecked(true)
-                    setETH(parseEther(newETH));
 
 
-                    setErrorMessage2("");
+            if (evalString(newETH) === false) {
+
+                const EthCheck = parseEther(newETH);
+                console.log(EthCheck);
+
+                if (typeof EthCheck === 'bigint') {
+
+
+
+
+                    let finETH = bigIntToString(EthCheck)
+
+                    let finStETH = bigIntToString(stETH)
+
+                    let formatETH = wei(parseInt(finETH));
+                    let formatStETH = wei(parseInt(finStETH));
+
+
+                    if (formatETH > 0) {
+                        let newTotal = formatETH + formatStETH
+                        console.log("To see if ETH is above 1: " + newTotal);
+
+
+                        if (newTotal < 1) {
+
+                            setETHChecked(true)
+                            setETH(parseEther(newETH));
+
+
+                            setErrorMessage2("");
+
+
+                        } else {
+                            setErrorMessage2("Your total deposit must be below the value of 1 ETH.")
+                            setETHChecked(false);
+                            setETH(BigInt(0))
+                            setApproved(false)
+
+                        }
+                    }
+
+                    else {
+
+                        setErrorMessage2("You have not input a valid number")
+                        setETHChecked(false);
+                        setETH(BigInt(0))
+                        setApproved(false)
+
+
+
+                    }
+
+
+
+
 
 
                 } else {
-                    setErrorMessage2("Your deposit must be below the value of 1 ETH.")
+                    console.log("You have not input a valid number.");
+                    setErrorMessage2("You have not input a valid number.")
                     setETHChecked(false);
                     setETH(BigInt(0))
+                    setApproved(false)
+
+
+
                 }
 
 
 
 
-            } else {
-                console.log("You have not input a valid number.");
-                setErrorMessage2("You have not input a valid number.")
+            }
+
+            else {
+                console.log("Not valid");
+                setErrorMessage2("You have not input a number.");
                 setETHChecked(false);
                 setETH(BigInt(0))
+                setApproved(false)
+
 
 
             }
@@ -666,19 +758,9 @@ function Main() {
 
 
 
-        } else {
-            console.log("Not valid");
-            setErrorMessage2("You have not input a number.");
-            setETHChecked(false);
-            setETH(BigInt(0))
 
 
         }
-
-
-
-
-
 
 
     }
@@ -704,8 +786,13 @@ function Main() {
 
             balanceCheckStETH();
             getContractBalance();
-            allowanceCheck();
 
+
+
+
+
+        } else {
+            setIsReadyToApprove(false)
 
         }
 
@@ -727,7 +814,7 @@ function Main() {
                     charCode !== 46 && charCode !== 48 && charCode !== 49) || // Exclude '.' (46), '0' (48), and '1' (49)
                 (charCode >= 58 && charCode <= 64) ||  // More symbols (: to @)
                 (charCode >= 91 && charCode <= 96) ||  // Even more symbols ([ to `)
-                (charCode >= 123 && charCode <= 126)   // Some more symbols ({ to ~)
+                (charCode >= 123 && charCode <= 126) || (charCode === 32)   // Some more symbols ({ to ~)
             ) {
                 return true; // Found a letter or symbol.
             }
@@ -746,54 +833,100 @@ function Main() {
 
     const handleStETH = async (newStETH: string) => {
         setStETHstring(newStETH);
+        let stEthCheck;
+
         setApproved(false)
-        console.log("This is new stETH" + newStETH)
-        if (evalString(newStETH) === false && newStETH !== "0" && newStETH !== "0." && newStETH !== "0.0") {
-            const stEthCheck = parseEther(newStETH)
-            console.log(stEthCheck)
-            if (typeof stEthCheck === 'bigint') {
+        if (newStETH === "" && ETHChecked) {
+
+            setErrorMessage("");
+            setStETHChecked(false);
+            setStETH(BigInt(0))
+            balanceCheck();
+            setIsReadyToApprove(false)
+        }
+
+        else if (newStETH === "" && ETHChecked === false) {
+
+            setErrorMessage("");
+            setStETHChecked(false);
+            setStETH(BigInt(0))
+            setApproved(false)
+            setIsReadyToApprove(false)
+
+        } else {
 
 
-                let finStETH = bigIntToString(stEthCheck)
+           
 
-                let finETH = bigIntToString(ETH)
+            console.log("This is new stETH" + newStETH)
 
-                let formatETH = wei(parseInt(finETH));
-                let formatStETH = wei(parseInt(finStETH));
+            if (evalString(newStETH) === false) {
 
-                let newTotal = formatETH + formatStETH
-                console.log("To see if ETH is above 1: " + newTotal);
+                stEthCheck = parseEther(newStETH)
+                console.log(stEthCheck)
 
-
-
-                if (newTotal < 1) {
-
-                    setStETHChecked(true)
-                    setStETH(parseEther(newStETH));
+                if (typeof stEthCheck === 'bigint') {
 
 
-                    setErrorMessage("");
+                    let finStETH = bigIntToString(stEthCheck)
 
+                    let finETH = bigIntToString(ETH)
+
+                    let formatETH = wei(parseInt(finETH));
+                    let formatStETH = wei(parseInt(finStETH));
+
+                    if (formatStETH > 0) {
+
+                        let newTotal = formatETH + formatStETH
+                        console.log("To see if ETH is above 1: " + newTotal);
+
+
+
+
+
+                        if (newTotal < 1) {
+
+                            setStETHChecked(true)
+                            setStETH(parseEther(newStETH));
+
+
+                            setErrorMessage("");
+
+
+                        } else {
+                            setErrorMessage("Your deposit must be below the value of 1 ETH.")
+                            setStETHChecked(false);
+                            setIsReadyToApprove(false);
+                            setApproved(false);
+
+                        }
+
+                    } else {
+                        setErrorMessage("You have not input a valid number")
+                        setStETHChecked(false);
+                        setStETH(BigInt(0))
+                        setIsReadyToApprove(false);
+
+                    }
 
                 } else {
-                    setErrorMessage("Your deposit must be below the value of 1 ETH.")
-                    setETHChecked(false);
+
+                    setErrorMessage("You have not input a valid number.")
+                    setStETHChecked(false)
+                    setIsReadyToApprove(false);
+                    setStETH(BigInt(0))
+
+
                 }
-
             } else {
-                console.log("You have not input a number.");
-                setErrorMessage("You have not input a number.")
-                setStETHChecked(false)
 
-                setStETH(BigInt(0))
+                setErrorMessage("You have not input a valid number.");
+                setFinalGas("");
+                setIsReadyToApprove(false);
+                setStETHChecked(false);
+
 
             }
-        } else {
-            console.log("Not valid");
-            setErrorMessage("You have not input a number.");
-            setFinalGas("");
-
-            setStETHChecked(false);
 
         }
     }
@@ -812,12 +945,21 @@ function Main() {
 
     return (
 
+        
+    
+
 
         <div className={classes.container}>
-            <div className={classes.wrapper}>
-
+         {noWallet? 
+         (<div className={classes.wrapper}>
+            <div className={classes.box}>
+                <h3>You cannot connect to stETH2rETH without a wallet.</h3>
+                <button><a href="https://metamask.io/">Connect to MetaMask</a></button>
+            </div>
+         </div>)   : (
+         
+         <div className={classes.wrapper}>
                 <div className={classes.box}>
-
                     <h3>1. Connect to your Wallet</h3>
 
 
@@ -836,8 +978,8 @@ function Main() {
 
                     }
 
-                   {/*  <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>*/}
+                    <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>
 
 
 
@@ -902,7 +1044,7 @@ function Main() {
                     }
 
 
-                    <div className={classes.error2}><p>{errorMessage}</p>  <p>{errorMessage2}</p></div>
+                    <div className={classes.error2}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
 
 
 
@@ -1000,21 +1142,26 @@ function Main() {
 
 
 
-            </div>
+            </div>)}
 
 
 
-            <div className={classes.error}><p>{errorMessage}</p>  <p>{errorMessage2}</p></div>
+            <div className={classes.error}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
+
+                
 
 
+        </div> 
 
 
-        </div>
+        
 
 
 
 
     );
+
+
 }
 
 export default Main;
