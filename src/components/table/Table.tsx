@@ -20,7 +20,7 @@ const Table = () => {
 
   const client = createPublicClient({
     chain: mainnet,
-    transport: http('http://127.0.0.1:8545')
+    transport: http('https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW')
   });
 
 

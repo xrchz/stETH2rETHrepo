@@ -73,7 +73,7 @@ function Main() {
     const client = createPublicClient({
 
         chain: mainnet,
-        transport: http('http://127.0.0.1:8545')
+        transport: http('https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW')
     })
         .extend(publicActions)
         .extend(walletActions)
@@ -558,6 +558,7 @@ if (wallet !== undefined) {
         } catch (e) {
             console.log("error in request", e);
             alert("You must install an Ethereum Wallet to use the app")
+            setLoading(false)
             // location.reload();
         }
 
@@ -592,7 +593,7 @@ if (wallet !== undefined) {
 
         } catch (e) {
 
-            alert(e)
+            console.log(e)
             
 
         }
@@ -964,7 +965,7 @@ if (wallet !== undefined) {
 
 
                     <button onClick={connect}>Connect Wallet</button>
-                    <button className={classes.disconnect} onClick={disconnect}>Disonnect Wallet</button>
+              {account  &&     <button className={classes.disconnect} onClick={disconnect}>Disonnect Wallet</button>}
 
 
 
@@ -978,8 +979,8 @@ if (wallet !== undefined) {
 
                     }
 
-                    <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>
+                   {/* <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
 
 
 

@@ -36,7 +36,7 @@ textElement.blur();
     // Use setTimeout to set copied back to false after 1 second (1000 milliseconds)
     const timeoutId = setTimeout(() => {
       setCopied(false);
-    }, 1000);
+    }, 2000);
   
     // Clean up the timeout to avoid memory leaks
     return () => clearTimeout(timeoutId);
@@ -50,7 +50,9 @@ textElement.blur();
    
 
 
-     {!copied &&<AiFillCopy onClick={handleCopyClick}/>}{copied && <AiOutlineCheck/>}
+     {!copied &&<AiFillCopy className={classes.icon} onClick={handleCopyClick}/>}{copied && <AiOutlineCheck/>}
+
+     
     </div>
       
 
