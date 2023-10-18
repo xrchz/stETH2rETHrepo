@@ -6,6 +6,9 @@ import Title from './components/title/Title.jsx';
 import ContractTag from './components/contractTag/ContractTag';
 import Main from "./components/Main/Main.tsx";
 
+import NewCode from "./components/uniTest/newCode.tsx";
+import UniTest from "./components/uniTest/UniTest.tsx";
+
 
 
 function App() {
@@ -16,7 +19,7 @@ function App() {
     <div className={classes.app}>
       <Title />
 
-     <Main/>
+    <Main/>
 
 
 
@@ -29,7 +32,11 @@ function App() {
       <div className={classes.tableCont}>
         <Table />
 
+        
+
       </div>
+
+      <UniTest/>
 
     </div>
    

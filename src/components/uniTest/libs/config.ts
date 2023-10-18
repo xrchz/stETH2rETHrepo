@@ -1,5 +1,5 @@
 import { Token } from '@uniswap/sdk-core'
-import { WETH_TOKEN, USDC_TOKEN } from './libs/constants'
+import { WETH_TOKEN, USDC_TOKEN, RETH_TOKEN } from './constants.ts'
 
 // Sets if the example should run locally or on chain
 export enum Environment {
@@ -29,10 +29,10 @@ export interface ExampleConfig {
 // Example Configuration
 
 export const CurrentConfig: ExampleConfig = {
-  env: Environment.LOCAL,
+  env: Environment.MAINNET,
   rpc: {
     local: 'http://localhost:8545',
-    mainnet: '',
+    mainnet: 'https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW',
   },
   wallet: {
     address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
@@ -42,6 +42,6 @@ export const CurrentConfig: ExampleConfig = {
   tokens: {
     in: WETH_TOKEN,
     amountIn: 1,
-    out: USDC_TOKEN,
+    out: RETH_TOKEN,
   },
 }

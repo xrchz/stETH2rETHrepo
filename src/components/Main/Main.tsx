@@ -7,7 +7,6 @@ import "viem/window";
 import stETH2rETHabi from "../../abi/stETH2rETH.json"
 import rETHabi from "../../abi/rETH.json"
 import stethAbi from "../../abi/stETH.json"
-
 import { CSSProperties } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 
@@ -28,7 +27,6 @@ function Main() {
     const [account, setAccount] = useState<Address>()
     const [foundryAccount, setFoundryAccount] = useState<Address>()
     const [approved, setApproved] = useState<boolean>(false);
-
     const [hash, setHash] = useState<string | undefined>()
     const [receipt, setReceipt] = useState<string | undefined>();
     const [stETHChecked, setStETHChecked] = useState<boolean>(false);
@@ -52,18 +50,12 @@ function Main() {
     const [stETHBalance, setstETHBalance] = useState<string | undefined>("")
     const [finrETH, setFinrETH] = useState<boolean>(false);
     const [noWallet, setNoWallet] = useState<boolean>(false);
-
-
     const [isReadyToApprove, setIsReadyToApprove] = useState(false);
-
-
     const [loading, setLoading] = useState(false);
     const [color, setColor] = useState("#ffffff");
-
     const stETH2rETH = '0xfAaBbE302750635E3F918385a1aEb4A9eb45977a';
     const rETHcontract = '0xae78736Cd615f374D3085123A210448E74Fc6393';
     const stETHcontract = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
-
     const [wallet, setWallet] = useState(undefined);
 
 
@@ -544,7 +536,7 @@ if (wallet !== undefined) {
         try {
            
 
-           const newWallet =  await createWalletClient({
+           let newWallet =  await createWalletClient({
                 chain: mainnet,
                 transport: custom(window.ethereum)
             })
@@ -555,6 +547,10 @@ if (wallet !== undefined) {
     
             setAccount(address)
             setLoading(false)
+
+           
+
+            newWallet = null;
         } catch (e) {
             console.log("error in request", e);
             alert("You must install an Ethereum Wallet to use the app")
@@ -587,8 +583,10 @@ if (wallet !== undefined) {
                 method: "eth_requestAccounts",
                 params: [{eth_accounts: {}}]
             })
+
     
             setAccount(undefined)
+            setWallet(undefined);
            await newTransaction();
 
         } catch (e) {

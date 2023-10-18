@@ -18,6 +18,15 @@ export const USDC_TOKEN = new Token(
   'USD//C'
 )
 
+export const RETH_TOKEN = new Token(
+  SUPPORTED_CHAINS[0],
+  '0xae78736Cd615f374D3085123A210448E74Fc6393',
+  18
+ 
+
+
+)
+
 export const DAI_TOKEN = new Token(
     SUPPORTED_CHAINS[0],
   '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -62,4 +71,4 @@ export const WETH_ABI = [
 
 export const MAX_FEE_PER_GAS = 100000000000
 export const MAX_PRIORITY_FEE_PER_GAS = 100000000000
-export const TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER = 10000
+export const TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER = 1

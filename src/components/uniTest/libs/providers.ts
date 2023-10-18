@@ -1,5 +1,5 @@
 import { ethers, providers, BigNumber } from 'ethers'
-import { Environment, CurrentConfig } from '../config'
+import { Environment, CurrentConfig } from './config.ts'
 import { BaseProvider } from '@ethersproject/providers'
 
 // Single copies of provider and wallet
@@ -139,3 +139,7 @@ async function sendTransactionViaWallet(
     return TransactionState.Failed
   }
 }
+
+
+
+
