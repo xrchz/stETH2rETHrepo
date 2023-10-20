@@ -209,13 +209,7 @@ const UniTest = () => {
     async function executeRoute(
         route: SwapRoute
     ) {
-      
-
-        
-
-       
-
-
+    
        
 
        /* const res = await sendTransaction({
@@ -231,6 +225,8 @@ const UniTest = () => {
             abi: UniAbi,
             data: route.methodParameters?.calldata
           })
+
+          
 
 
 

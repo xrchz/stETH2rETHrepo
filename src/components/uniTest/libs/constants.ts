@@ -22,9 +22,6 @@ export const RETH_TOKEN = new Token(
   SUPPORTED_CHAINS[0],
   '0xae78736Cd615f374D3085123A210448E74Fc6393',
   18
- 
-
-
 )
 
 export const DAI_TOKEN = new Token(
@@ -41,6 +38,15 @@ export const WETH_TOKEN = new Token(
   18,
   'WETH',
   'Wrapped Ether'
+)
+
+
+export const WSTETH_TOKEN = new Token(
+  SUPPORTED_CHAINS[0],
+'0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+18,
+'WSTETH',
+'Wrapped liquid staked Ether'
 )
 
 // ABI's

@@ -1,14 +1,42 @@
 
 import React, { useState, useEffect } from "react";
 import classes from './main.module.css';
-import { Address, createPublicClient, http, publicActions, createWalletClient, walletActions, custom, parseEther, formatEther } from 'viem';
+import { Address, createPublicClient, hexToNumber, createTestClient, http, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
 import { mainnet, goerli } from 'viem/chains';
 import "viem/window";
 import stETH2rETHabi from "../../abi/stETH2rETH.json"
 import rETHabi from "../../abi/rETH.json"
 import stethAbi from "../../abi/stETH.json"
+import wstETHAbi from "../../abi/wstETH.json"
 import { CSSProperties } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
+import { TradeType, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
+import { CurrentConfig } from '../uniTest/libs/config.ts'
+import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
+import { providers } from 'ethers';
+import UniAbi from "../uniTest/libs/UniAbi.json"
+import {
+    AlphaRouter,
+    ChainId,
+    SwapOptionsSwapRouter02,
+    SwapRoute,
+    SwapType,
+} from '@uniswap/smart-order-router'
+import {
+    getMainnetProvider,
+    getWalletAddress,
+    sendTransaction,
+    TransactionState,
+    getProvider,
+} from '../uniTest/libs/providers.ts'
+import {
+    MAX_FEE_PER_GAS,
+    MAX_PRIORITY_FEE_PER_GAS,
+    ERC20_ABI,
+    TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
+    V3_SWAP_ROUTER_ADDRESS,
+    WSTETH_TOKEN,
+} from '../uniTest/libs/constants.ts'
 
 
 
@@ -57,15 +85,19 @@ function Main() {
     const rETHcontract = '0xae78736Cd615f374D3085123A210448E74Fc6393';
     const stETHcontract = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
     const [wallet, setWallet] = useState(undefined);
+    const [currentWETHRoute, setCurrentWETHRoute] = useState<SwapRoute | undefined>(undefined)
+    const [currentWSTETHRoute, setCurrentWSTETHRoute] = useState<SwapRoute | undefined>(undefined)
+    const [altrETH, setAltrETH] = useState(0)
 
 
     
 
 
-    const client = createPublicClient({
+    const client = createTestClient({
 
         chain: mainnet,
-        transport: http('https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW')
+        mode: "anvil",
+        transport: http('http://127.0.0.1:8545')
     })
         .extend(publicActions)
         .extend(walletActions)
@@ -137,9 +169,9 @@ function Main() {
             value: ETH
         })
 
-        console.log(typeof result)
+   
         let finGas = bigIntToString(result);
-        console.log("Gas Estimate Call result:" + result);
+        
 
 
         setGas(finGas);
@@ -166,7 +198,7 @@ function Main() {
 
 
 
-        console.log("rETH returned:" + finrETH);
+     
 
 
 
@@ -209,8 +241,16 @@ function Main() {
 
 
 
-        } 
+        } else {
+            setApproved(true)
+        }
     }
+
+    // GET DEX GAS
+
+
+
+
 
     //FRESH TRANSACTION
 
@@ -225,6 +265,8 @@ function Main() {
         setStETHstring("");
         setETHstring("");
         setNewTransactionBool(false);
+        setCurrentWETHRoute(undefined)
+        setCurrentWSTETHRoute(undefined)
         setFinalGas("");
         setEstReth("");
         setFinrETH(false);
@@ -238,7 +280,244 @@ function Main() {
 
 
 
-    //GET ADDRESSES FROM FOUNDRY
+    // ESTABLISH wETH UNISWAP ROUTE
+
+  
+
+    async function generateWETHRoute(): Promise<SwapRoute | null> {
+        const router = new AlphaRouter({
+            chainId: 1,
+            provider: getMainnetProvider(),
+        })
+
+        const options: SwapOptionsSwapRouter02 = {
+            recipient: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+            slippageTolerance: new Percent(50, 10_000),
+            deadline: Math.floor(Date.now() / 1000 + 1800),
+            type: SwapType.SWAP_ROUTER_02,
+        }
+
+        console.log("ETH into wETH" + ETH)
+
+        const route = await router.route(
+            CurrencyAmount.fromRawAmount(
+                CurrentConfig.tokens.in,
+                fromReadableAmount(
+                    Number(ETH),
+                    CurrentConfig.tokens.in.decimals
+                ).toString()
+            ),
+            CurrentConfig.tokens.out,
+            TradeType.EXACT_INPUT,
+            options
+        )
+
+
+        setCurrentWETHRoute(route);
+
+        return route
+    }
+
+
+
+    useEffect(() => {
+
+        console.log("Current wETH route:" + currentWETHRoute)
+
+        if (currentWETHRoute !== undefined && currentWSTETHRoute !== undefined) {
+            handleComprETH();
+
+        }
+        
+
+    }, [currentWETHRoute, currentWSTETHRoute])
+
+
+     // ESTABLISH wstETH UNISWAP ROUTE
+
+  
+
+     async function generateWSTETHRoute(): Promise<SwapRoute | null> {
+        const router = new AlphaRouter({
+            chainId: 1,
+            provider: getMainnetProvider(),
+        })
+
+        const options: SwapOptionsSwapRouter02 = {
+            recipient: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+            slippageTolerance: new Percent(50, 10_000),
+            deadline: Math.floor(Date.now() / 1000 + 1800),
+            type: SwapType.SWAP_ROUTER_02,
+        }
+
+
+
+        const wstETHAmount = await client.readContract({
+            address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+            abi: wstETHAbi,
+            functionName: 'getStETHByWstETH',
+            args: [stETH]
+          })
+
+          console.log(wstETHAmount);
+
+        const route = await router.route(
+            CurrencyAmount.fromRawAmount(
+                WSTETH_TOKEN,
+                fromReadableAmount(
+                    wei(Number(wstETHAmount)),
+                    WSTETH_TOKEN.decimals
+                ).toString()
+            ),
+            CurrentConfig.tokens.out,
+            TradeType.EXACT_INPUT,
+            options
+        )
+
+
+        setCurrentWSTETHRoute(route);
+
+        return route
+    }
+
+
+  const generateRoute =  async() => {
+
+
+
+       await generateWETHRoute();
+        await generateWSTETHRoute();
+
+
+  }
+
+    
+
+
+  
+
+   
+
+    
+
+   
+
+
+
+    // GET wstETH UNISWAP rETH
+
+    async function executeWSTETHRoute(
+        route: SwapRoute
+    ) {
+    
+
+        const { functionName, args } = decodeFunctionData({
+            abi: UniAbi,
+            data: route?.methodParameters?.calldata
+          })
+
+         const {result}  = await client.simulateContract({
+            address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+            abi: UniAbi,
+            functionName,
+            args,
+            account: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+          })
+
+
+
+
+          const gas  = await client.estimateContractGas({
+            address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+            abi: UniAbi,
+            functionName,
+            args,
+            account: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+          })
+
+       /* const value = decodeFunctionResult({
+            abi: UniAbi,
+            functionName,
+            data: result
+          })*/
+
+  
+        console.log("DEX GAS: " + gas);
+       
+        console.log(functionName);
+        console.log(args);
+        console.log(result);
+
+        return result;
+
+
+    }
+
+
+    // GET wETH UNISWAP rETH
+
+    async function executeWETHRoute(
+        route: SwapRoute
+    ) {
+    
+
+        const { functionName, args } = decodeFunctionData({
+            abi: UniAbi,
+            data: route?.methodParameters?.calldata
+          })
+
+         const resultWETH  = await client.simulateContract({
+            address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+            abi: UniAbi,
+            functionName,
+            args,
+            account: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+          })
+
+       /* const value = decodeFunctionResult({
+            abi: wagmiAbi,
+            functionName: 'ownerOf',
+            data: '0x000000000000000000000000a5cc3c03994db5b0d9a5eedd10cabab0813678ac'
+          })*/
+
+        console.log(functionName);
+        console.log(args);
+        console.log(resultWETH)
+
+        return resultWETH;
+
+
+    }
+
+    const handleComprETH = async() => {
+
+
+      
+           // const wETH2rETH =  await executeWETHRoute(currentWETHRoute);
+            const wstETH2rETH =  await executeWSTETHRoute(currentWSTETHRoute);
+      
+          
+        console.log("wstETH 2 rETH" + wstETH2rETH);
+            setAltrETH(wei(hexToNumber(wstETH2rETH)));
+      
+            return wstETH2rETH;
+
+      
+
+  
+
+    }
+
+
+
+    
+
+
+
+
+    // GET UNISWAP GAS (estimateContractGas)
+
+
 
 
 
@@ -303,7 +582,7 @@ function Main() {
 
 
 
-    const handleFakestETH = async () => {
+  const handleFakestETH = async () => {
 
 
 
@@ -314,20 +593,17 @@ function Main() {
         })
 
 
-if (wallet !== undefined) {
 
-        const stETHResult = await wallet.writeContract({
+        await wallet.writeContract({
             address: stETHcontract,
             abi: stethAbi,
             functionName: 'submit',
-            args: [account],
-            account,
+            args: ['0x8A60D3742EE1c5E955E9680DF3e9f986b300F791'],
+            account: '0x8A60D3742EE1c5E955E9680DF3e9f986b300F791',
             value: parseEther("0.1"),
         })
 
         console.log("Fake stETH return:" + stETHResult)
-
-    }
 
 
 
@@ -511,7 +787,8 @@ if (wallet !== undefined) {
                     setLoading(false)
                     setETHChecked(false);
                     setStETHChecked(false);
-                    setStETH(BigInt(0))
+                    generateRoute();
+                    setStETH(BigInt(0));
                     setETH(BigInt(0))
                     let finGas = bigIntToString(receipt.cumulativeGasUsed)
                     setFinalGas(finGas);
@@ -528,6 +805,11 @@ if (wallet !== undefined) {
 
 
     //CONNECTIONS
+
+
+    //GET ADDRESSES FROM FOUNDRY
+
+
 
 
     const connect = async () => {
@@ -644,6 +926,7 @@ if (wallet !== undefined) {
         if (ETHChecked) {
             balanceCheck();
             getContractBalance();
+           
         }
         if (account !== undefined && initialised) {
 
@@ -785,6 +1068,7 @@ if (wallet !== undefined) {
 
             balanceCheckStETH();
             getContractBalance();
+            
 
 
 
@@ -977,8 +1261,8 @@ if (wallet !== undefined) {
 
                     }
 
-                   {/* <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
+                 <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>
 
 
 
@@ -1111,7 +1395,19 @@ if (wallet !== undefined) {
                             </>
                         </>
                     )
-
+                    }
+                    {
+                        (altrETH !== 0) && (
+                            <>
+                                <>
+                                    <h5><span>rETH returned on Dex:</span> {altrETH}</h5>
+                                </>
+    
+    
+                               
+    
+                            </>
+                        )
                     }
 
 

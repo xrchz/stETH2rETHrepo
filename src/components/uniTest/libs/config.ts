@@ -1,5 +1,5 @@
 import { Token } from '@uniswap/sdk-core'
-import { WETH_TOKEN, USDC_TOKEN, RETH_TOKEN } from './constants.ts'
+import { WETH_TOKEN, WSTETH_TOKEN, RETH_TOKEN } from './constants.ts'
 
 // Sets if the example should run locally or on chain
 export enum Environment {
@@ -41,6 +41,7 @@ export const CurrentConfig: ExampleConfig = {
   },
   tokens: {
     in: WETH_TOKEN,
+    alsoIn: WSTETH_TOKEN,
     amountIn: 1,
     out: RETH_TOKEN,
   },
