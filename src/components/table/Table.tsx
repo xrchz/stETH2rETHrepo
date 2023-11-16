@@ -62,9 +62,11 @@ const Table = () => {
         })
 
         console.log(topics)
+
+        
       });
 
-      setAllTransactions(processedLogs);
+      setAllTransactions(processedLogs.reverse());
 
     } catch (error) {
       console.log(error)

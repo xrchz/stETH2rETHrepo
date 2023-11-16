@@ -56,14 +56,14 @@
             }
         ],
         "outputs": [],
-        "stateMutability": "nonpayable",
-        "payable": false
+        "stateMutability": "payable",
+        "payable": true
     },
     {
         "type": "function",
         "name": "drain",
         "inputs": [],
         "outputs": [],
-        "stateMutability": "nonpayable",
-        "payable": false
+        "stateMutability": "payable",
+        "payable": true
     }]

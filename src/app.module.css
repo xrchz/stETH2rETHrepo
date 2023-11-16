@@ -5,6 +5,7 @@
 
 .app {
 
+
   width: 100%;
   height: auto;
   display: flex;
@@ -15,9 +16,12 @@ padding-bottom: 5vh;
  font-family: "Roboto", sans-serif;
  background: rgb(255,255,255);
  background: linear-gradient(90deg, rgba(255,255,255,1) 5%, rgba(229,245,243,1) 89%);
+
  
  
 }
+
+
 
 .tableCont {
   width:  93%;
@@ -28,7 +32,14 @@ padding-bottom: 5vh;
   border: 0.5px solid #222;
   border-radius: 10px;
 
+
 }
+
+.tableCont::-webkit-scrollbar {
+  display: none;
+  position: relative;
+}
+
 
 
 

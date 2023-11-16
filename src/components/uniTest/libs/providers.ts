@@ -27,6 +27,7 @@ export function getMainnetProvider(): BaseProvider {
   return mainnetProvider
 }
 
+
 export function getProvider(): providers.Provider | null {
   return CurrentConfig.env === Environment.WALLET_EXTENSION
     ? browserExtensionProvider

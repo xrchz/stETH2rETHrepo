@@ -32,7 +32,7 @@ export const CurrentConfig: ExampleConfig = {
   env: Environment.MAINNET,
   rpc: {
     local: 'http://localhost:8545',
-    mainnet: 'https://eth-mainnet.g.alchemy.com/v2/HqWYoX-F7NdfHKak6bC23gpRfU6YOklW',
+    mainnet: 'https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4',
   },
   wallet: {
     address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
@@ -41,7 +41,6 @@ export const CurrentConfig: ExampleConfig = {
   },
   tokens: {
     in: WETH_TOKEN,
-    alsoIn: WSTETH_TOKEN,
     amountIn: 1,
     out: RETH_TOKEN,
   },

@@ -20,32 +20,39 @@
     text-align: center;
     margin:  0;
     color:rgb(30, 132, 124);
-    
+    font-weight: 500;
     
 
     
   
 }
 
+
+.container > h2 > img {
+    position: absolute;
+    z-index: -0.1;
+    width: 100px;
+    height: 100px;
+
+    top: 30px;
+
+    left: 33%;
+    font-weight: 500;
+}
+
 .container > h2 > span {
     font-weight: 500;
-    color: black;
+    color: #7b9b92;
+
     
 }
 
-.container > h2 > .eth {
-    font-weight: 300;
-    color: #999;
-    font-size: 70px;
-   
-    text-transform: uppercase;
-    
-}
 
 .container > p {
-    font-size: 20px;
-    font-weight: 300;
+    font-size: 22px;
+   
     padding-top: 2vh;
+    color: #333;
 }
 
 .container > p > a  {

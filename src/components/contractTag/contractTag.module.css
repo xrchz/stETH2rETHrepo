@@ -40,7 +40,7 @@
 @media (max-width: 1050px) {
 
     .container {
-        font-size: 15px;
+        font-size: 16px;
         
             width: 85%;
             justify-content: center;
@@ -49,7 +49,7 @@
     }
     .addressTextClass {
    
-         width: 80%;
+         width: 90%;
       
         
      }
@@ -60,7 +60,7 @@
        width: 90%;
     
         margin: 0 0.7vw;
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 200;
     
     }
