@@ -2,42 +2,34 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { AiOutlineClose } from 'react-icons/ai'
+
 import classes from './main.module.css';
-import { Address, createPublicClient, hexToNumber, createTestClient, http, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
-import { mainnet, goerli } from 'viem/chains';
+import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import { mainnet } from 'viem/chains';
 import "viem/window";
 import stETH2rETHabi from "../../abi/stETH2rETH.json"
 import rETHabi from "../../abi/rETH.json"
 import stethAbi from "../../abi/stETH.json"
 import wstETHAbi from "../../abi/wstETH.json"
-import wETHAbi from "../../abi/wETH.json"
+
 import { CSSProperties } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { TradeType, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
+import { TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
-import { providers } from 'ethers';
+
 import UniAbi from "../uniTest/libs/UniAbi.json"
 import {
     AlphaRouter,
-    ChainId,
     SwapOptionsSwapRouter02,
     SwapRoute,
     SwapType,
 } from '@uniswap/smart-order-router'
 import {
     getMainnetProvider,
-    getWalletAddress,
-    sendTransaction,
-    TransactionState,
-    getProvider,
+
 } from '../uniTest/libs/providers.ts'
 import {
-    MAX_FEE_PER_GAS,
-    MAX_PRIORITY_FEE_PER_GAS,
-    ERC20_ABI,
-    TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-    V3_SWAP_ROUTER_ADDRESS,
     WSTETH_TOKEN,
     WETH_TOKEN
 } from '../uniTest/libs/constants.ts'
@@ -56,15 +48,15 @@ const override: CSSProperties = {
 function Main() {
 
 
-    const [account, setAccount] = useState<Address>()
+    const [account, setAccount] = useState<Address>();
     const [foundryAccount, setFoundryAccount] = useState<Address>()
     const [approved, setApproved] = useState<boolean>(false);
     const [hash, setHash] = useState<string | undefined>()
     const [receipt, setReceipt] = useState<string | undefined>();
     const [stETHChecked, setStETHChecked] = useState<boolean>(false);
-    const [stETH, setStETH] = useState<BigInt | undefined>(BigInt(0));
+    const [stETH, setStETH] = useState<bigint>(BigInt(0));
     const [stETHstring, setStETHstring] = useState("");
-    const [ETH, setETH] = useState<bigint | undefined>(BigInt(0));
+    const [ETH, setETH] = useState<bigint>(BigInt(0));
     const [ETHChecked, setETHChecked] = useState<boolean>(false)
     const [ETHstring, setETHstring] = useState("");
     const [approvalHash, setApprovalHash] = useState<string | undefined>()
@@ -73,7 +65,7 @@ function Main() {
     const [errorMessage2, setErrorMessage2] = useState<string | undefined>("")
     const [gas, setGas] = useState<BigInt | undefined>(BigInt(0))
     const [finalGas, setFinalGas] = useState<BigInt | undefined>(BigInt(0))
-    const [TOTAL, setTOTAL] = useState<bigint | undefined>(BigInt(0));
+
     const [initialised, setInitialised] = useState<boolean>(false)
     const [newTransactionBool, setNewTransactionBool] = useState(false)
     const [estReth, setEstReth] = useState<string | undefined>("")
@@ -81,7 +73,7 @@ function Main() {
     const [ETHBalance, setETHBalance] = useState<string | undefined>("")
     const [stETHBalance, setstETHBalance] = useState<string | undefined>("")
     const [finrETH, setFinrETH] = useState<boolean>(false);
-    const [noWallet, setNoWallet] = useState<boolean>(false);
+
     const [isReadyToApprove, setIsReadyToApprove] = useState(false);
     const [loading, setLoading] = useState(false);
     const [color, setColor] = useState("#ffffff");
@@ -92,9 +84,9 @@ function Main() {
     const [currentWETHRoute, setCurrentWETHRoute] = useState<SwapRoute | undefined>(undefined)
     const [currentWSTETHRoute, setCurrentWSTETHRoute] = useState<SwapRoute | undefined>(undefined)
     const [altrETH, setAltrETH] = useState(0)
-    const [dexGas, setDexGas] = useState<BigInt | undefined>(BigInt(0));
-    const [dexWGas, setDexWGas] = useState<BigInt | undefined>(BigInt(0));
-    const [dexStGas, setDexStGas] = useState<BigInt | undefined>(BigInt(0));
+    const [dexGas, setDexGas] = useState<BigInt>(BigInt(0));
+    const [dexWGas, setDexWGas] = useState<BigInt>(BigInt(0));
+    const [dexStGas, setDexStGas] = useState<BigInt>(BigInt(0));
     const [showModal2, setShowModal2] = useState(false);
     const [depositSuccess, setDepositSuccess] = useState(false);
     const [routeGenerated, setRouteGenerated] = useState(false);
@@ -132,9 +124,9 @@ function Main() {
         const fetchData = () => {
             retrieveCurrentGasPrice();
         };
-    
+
         const timeoutId = setTimeout(fetchData, 6000);
-    
+
         return () => clearTimeout(timeoutId);
 
     }, [gasPrice]);
@@ -150,7 +142,7 @@ function Main() {
     const getContractBalance = async () => {
 
 
-       
+
 
 
         const rETH = await client.readContract({
@@ -161,12 +153,9 @@ function Main() {
         })
 
 
-        console.log("ESTIMATED rETH:" + estReth);
-        console.log("rETH in contract:" + rETH);
-        console.log(typeof rETH);
-        console.log(Number(rETH) >= parseInt(estReth));
 
-        if (Number(rETH) >= parseInt(estReth)) {
+
+        if (estReth !== undefined && Number(rETH) >= parseInt(estReth)) {
 
 
             setErrorMessage("")
@@ -201,64 +190,67 @@ function Main() {
 
     const estimateGas = async () => {
 
+
+
+
         let TOTAL = stETH + ETH;
 
 
 
-try {
-
-    
-    const result = await client.estimateContractGas({
-        abi: stETH2rETHabi,
-        args: [stETH],
-        address: stETH2rETH,
-        functionName: 'deposit',
-        account: account,
-        value: ETH
-    })
+        try {
 
 
-    let finGas = result;
+            const result = await client.estimateContractGas({
+                abi: stETH2rETHabi,
+                args: [stETH],
+                address: stETH2rETH,
+                functionName: 'deposit',
+                account: account,
+                value: ETH
+            })
 
 
-
-    setGas(finGas);
+            let finGas = result;
 
 
 
-
-
-    const rETHAmount = await client.readContract({
-        address: rETHcontract,
-        abi: rETHabi,
-        functionName: 'getRethValue',
-        args: [TOTAL]
-    })
-
-    //const rETH = wei(parseInt(rETHAmount));
-
-    retrieveCurrentGasPrice();
-
-    let finrETH = bigIntToString(rETHAmount)
-
-    console.log(finrETH);
-
-
-    let formatrETH = wei(finrETH);
-
-
-    console.log(formatrETH);
+            setGas(finGas);
 
 
 
-    setEstReth(formatrETH.toString());
-
-} catch (e) {
-
-    console.log(e)
 
 
-}
+            const rETHAmount = await client.readContract({
+                address: rETHcontract,
+                abi: rETHabi,
+                functionName: 'getRethValue',
+                args: [TOTAL]
+            })
+
+            //const rETH = wei(parseInt(rETHAmount));
+
+            retrieveCurrentGasPrice();
+
+            let finrETH = bigIntToString(rETHAmount)
+
+            console.log(finrETH);
+
+
+            let formatrETH = wei(finrETH);
+
+
+            console.log(formatrETH);
+
+
+
+            setEstReth(formatrETH.toString());
+
+        } catch (e) {
+
+            console.log(e)
+
+
+        }
 
 
 
@@ -287,7 +279,12 @@ try {
     //ALLOWANCE FUNCTION
 
     const allowanceCheck = async () => {
-        const allowance: BigInt = await client.readContract({
+
+
+        let allowance;
+
+
+        allowance = await client.readContract({
             address: stETHcontract,
             abi: stethAbi,
             functionName: 'allowance',
@@ -333,7 +330,7 @@ try {
                 } else {
 
                     estimateGas();
-                   
+
                 }
             }
 
@@ -394,6 +391,8 @@ try {
     async function generateWETHRoute(): Promise<SwapRoute | null> {
 
 
+        let route;
+
 
         const router = new AlphaRouter({
             chainId: 1,
@@ -412,16 +411,16 @@ try {
         console.log(typeof ETH)
 
 
-        
 
 
 
-        const route = await router.route(
+
+        route = await router.route(
             CurrencyAmount.fromRawAmount(
                 WETH_TOKEN,
-                
+
                 Number(ETH),
-                  
+
             ),
             CurrentConfig.tokens.out,
             TradeType.EXACT_INPUT,
@@ -452,6 +451,10 @@ try {
 
 
     async function generateWSTETHRoute(): Promise<SwapRoute | null> {
+
+        let route;
+
+
         const router = new AlphaRouter({
             chainId: 1,
             provider: getMainnetProvider(),
@@ -473,10 +476,10 @@ try {
             args: [stETH]
         })
 
-        console.log( typeof wstETHAmount);
-        console.log( wstETHAmount);
+        console.log(typeof wstETHAmount);
+        console.log(wstETHAmount);
 
-        const route = await router.route(
+        route = await router.route(
             CurrencyAmount.fromRawAmount(
                 WSTETH_TOKEN,
                 fromReadableAmount(
@@ -604,7 +607,7 @@ try {
             data: route?.methodParameters?.calldata
         })
 
-      
+
 
         const { result } = await client.simulateContract({
             address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
@@ -673,8 +676,11 @@ try {
 
 
         if (currentWETHRoute !== undefined && currentWSTETHRoute !== undefined) {
-            const wETH2rETH = await executeWETHRoute(currentWETHRoute);
-            const wstETH2rETH = await executeWSTETHRoute(currentWSTETHRoute);
+
+            let wETH2rETH;
+            let wstETH2rETH;
+            wETH2rETH = await executeWETHRoute(currentWETHRoute);
+            wstETH2rETH = await executeWSTETHRoute(currentWSTETHRoute);
 
 
             let TOTAL = hexToNumber(wstETH2rETH) + hexToNumber(wETH2rETH);
@@ -686,7 +692,9 @@ try {
 
 
         } else if (currentWETHRoute === undefined && currentWSTETHRoute !== undefined) {
-            const wstETH2rETH = await executeWSTETHRoute(currentWSTETHRoute);
+
+            let wstETH2rETH;
+            wstETH2rETH = await executeWSTETHRoute(currentWSTETHRoute);
 
 
 
@@ -694,7 +702,9 @@ try {
 
 
         } else if (currentWETHRoute !== undefined && currentWSTETHRoute === undefined) {
-            const wETH2rETH = await executeWETHRoute(currentWETHRoute);
+
+            let wETH2rETH;
+            wETH2rETH = await executeWETHRoute(currentWETHRoute);
 
 
             setAltrETH(wei(hexToNumber(wETH2rETH)));
@@ -739,6 +749,8 @@ try {
 
 
         try {
+
+
             const approval = await wallet.writeContract({
                 address: stETHcontract,
                 abi: stethAbi,
@@ -749,6 +761,13 @@ try {
 
 
             setApprovalHash(approval)
+
+
+
+
+
+
+
 
         } catch (e) {
             setLoading(false);
@@ -839,8 +858,11 @@ try {
     const balanceCheckStETH = async () => {
 
 
+        let balance;
 
-        const balance = await client.readContract({
+
+
+        balance = await client.readContract({
             address: stETHcontract,
             abi: stethAbi,
             functionName: 'balanceOf',
@@ -889,7 +911,7 @@ try {
 
             if (ETHChecked && stETHstring === "" && ETH !== BigInt(0) && ETHstring !== "") {
                 setApproved(true)
-               
+
             }
 
 
@@ -952,7 +974,7 @@ try {
 
         try {
 
-             estimateGas();
+            estimateGas();
 
             const result = await wallet.writeContract(
                 {
@@ -1278,7 +1300,7 @@ try {
 
 
         if (ETHChecked || ETH !== BigInt(0)) {
-                
+
             estimateGas();
 
         }
@@ -1309,7 +1331,7 @@ try {
 
 
             if (ETHChecked || ETH !== BigInt(0)) {
-                
+
                 console.log("Working")
                 console.log(ETHChecked)
 
@@ -1489,36 +1511,70 @@ try {
 
 
         <div className={classes.container}>
-            {noWallet ?
-                (<div className={classes.wrapper}>
-                    <div className={classes.box}>
-                        <h3>You cannot connect to stETH2rETH without a wallet.</h3>
-                        <button><a href="https://metamask.io/">Connect to MetaMask</a></button>
-                    </div>
-                </div>) : (
 
-                    <div className={classes.wrapper}>
-                        <div className={classes.box}>
-                            <h3>1. Connect to your Wallet</h3>
 
+
+            <div className={classes.wrapper}>
+                <div className={classes.box}>
+                    <h3>Connect to your Wallet</h3>
+
+
+                    {(account) &&
+                        (
+                            <>
+                                <h5 className={classes.specialH5}><span>Connected:</span> {account}</h5>
+
+                            </>
+                        )
+
+                    }
+
+                    {(account && !loading) && (
+
+
+
+
+
+
+
+
+                        <fieldset className={classes.balances} >
+                            <legend>Wallet Balances:</legend>
+                            < >
+                                <h5><span>rETH:</span> {rETHBalance}</h5>
+                            </>
+
+
+                            <>
+                                <h5><span>ETH: </span>{ETHBalance}</h5>
+                            </>
+
+
+
+                            <>
+                                <h5><span>stETH:</span> {stETHBalance}</h5>
+                            </>
+                        </fieldset>
+
+
+                    )
+                    }
+                    {(!account) &&
+                        (
 
                             <button onClick={connect}>Connect Wallet</button>
-                            {account && <button className={classes.disconnect} onClick={disconnect}>Disonnect Wallet</button>}
+
+                        )
+
+                    }
+                    {account && <button className={classes.disconnect} onClick={disconnect}>Disconnect Wallet</button>}
 
 
 
-                            {(account) &&
-                                (
-                                    <>
-                                        <h5><span>Connected:</span> {account}</h5>
-
-                                    </>
-                                )
-
-                            }
 
 
-                            {/*
+
+                    {/*
                         <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
                             <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>
                          */}
@@ -1528,179 +1584,174 @@ try {
 
 
 
-                        </div>
-                        <div className={classes.box}>
+                </div>
+                <div className={classes.box}>
 
-                            <h3>2. Select your stETH and/or ETH values</h3>
+                    <h3>Trade your ETH and/or stETH</h3>
 
 
 
 
-                            <ClipLoader
-                                color={color}
-                                loading={loading}
-                                cssOverride={override}
-                                size={150}
-                                aria-label="Loading Spinner"
-                                data-testid="loader"
-                            />
+                    <ClipLoader
+                        color={color}
+                        loading={loading}
+                        cssOverride={override}
+                        size={150}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                    />
 
 
 
-                            {(!newTransactionBool && account && !loading) &&
-                                (
-                                    <>
+                    {(!newTransactionBool && account && !loading) &&
+                        (
+                            <>
 
-                                        <h5><span>Value of ETH:</span></h5>
-                                        <input value={ETHstring} onChange={(e) => handleEth(e.target.value)
-                                        } />
+                                <h5><span>Value of ETH:</span></h5>
+                                <input value={ETHstring} onChange={(e) => handleEth(e.target.value)
+                                } />
 
 
-                                        <h5> <span>Value of stETH:</span></h5>
-                                        <input value={stETHstring} onChange={(e) => handleStETH(e.target.value)
-                                        } />
+                                <h5> <span>Value of stETH:</span></h5>
+                                <input value={stETHstring} onChange={(e) => handleStETH(e.target.value)
+                                } />
 
-                                    </>
-                                )
+                            </>
+                        )
 
-                            }
+                    }
 
-                            {(!approved && !newTransactionBool && account && !loading && isReadyToApprove) &&
+                    {(!approved && !newTransactionBool && account && !loading && isReadyToApprove) &&
 
 
-                                <button onClick={sendTransaction}>Approve</button>
+                        <button onClick={sendTransaction}>Approve</button>
 
-                            }
+                    }
 
+{(approved && !newTransactionBool && !loading) &&
 
+<button id={classes.buttonId} onClick={Deposit}>Deposit</button>
 
-                           
+}
 
-                            {(newTransactionBool && !loading) &&
 
 
-                                <button onClick={newTransaction}>New Transaction</button>
 
-                            }
 
+                    {(newTransactionBool && !loading) &&
 
-                            <div className={classes.error2}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
 
+                        <button onClick={newTransaction}>New Transaction</button>
 
+                    }
 
 
+                    <div className={classes.error2}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
 
 
 
 
 
-                        </div>
-                        <div className={classes.box}>
 
-                            <h3>3. View your estimated fees & final receipt</h3>
 
 
 
+                </div>
+                <div className={classes.box}>
 
+                    <h3>{depositSuccess ?  ("Final receipt") : ("Estimated fees/rETH ") }</h3>
 
-                            <ClipLoader
-                                color={color}
-                                loading={loading}
-                                cssOverride={override}
-                                size={150}
-                                aria-label="Loading Spinner"
-                                data-testid="loader"
-                            />
 
 
 
-                            {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates) && (
-                                <>
-                                    <h5><span>Estimated Gas:</span> {wei(Number(gas * gasPrice))}</h5>
-                                </>
-                            )
 
-                            }
+                    <ClipLoader
+                        color={color}
+                        loading={loading}
+                        cssOverride={override}
+                        size={150}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                    />
 
-                            {(finalGas !== BigInt(0) && !loading) && (<>
-                                <h5><span>Final Gas:</span> {wei(Number(finalGas * gasPrice))}</h5>
-                            </>)}
 
 
+                    {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates) && (
+                        <>
+                            <h5><span>Estimated transaction cost (ETH):</span> {formatEther(gas * gasPrice)}</h5>
+                        </>
+                    )
 
+                    }
 
-                            {(estReth !== "" && !loading && !finrETH && timeForEstimates) && (
-                                <>
-                                    <h5><span>You'll get (in rETH):</span>  {estReth}</h5>
-                                </>
+                    {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates) && (
+                        <>
+                            <h5><span>Estimated Gas (Returned):</span> {Number(gas)}</h5>
+                        </>
+                    )
 
-                            )}
+                    }
 
-                            {(estReth !== "" && !loading && finrETH) && (
-                                <>
-                                    <h5><span> rETH Received:</span> {estReth}</h5>
-                                </>
+                    {(finalGas !== BigInt(0) && !loading) && (<>
+                        <h5><span>Transaction cost (ETH):</span> {formatEther(finalGas * gasPrice)}</h5>
+                    </>)}
 
-                            )}
+                    {(finalGas !== BigInt(0) && !loading) && (<>
+                        <h5><span>Final Gas:</span> {Number(finalGas)}</h5>
+                    </>)}
 
-                            {(account && !loading) && (
 
 
 
+                    {(estReth !== "" && !loading && !finrETH && timeForEstimates) && (
+                        <>
+                            <h5><span>You'll get (in rETH):</span>  {estReth}</h5>
+                        </>
 
+                    )}
 
+                    {(estReth !== "" && !loading && finrETH) && (
+                        <>
+                            <h5><span> rETH Received:</span> {estReth}</h5>
+                        </>
 
+                    )}
 
 
-                                <fieldset className={classes.balances} >
-                                    <legend>Wallet Balances:</legend>
-                                    < >
-                                        <h5><span>rETH:</span> {rETHBalance}</h5>
-                                    </>
 
+                    {(depositSuccess) &&
+                        <>
+                            <button onClick={handleView}>VIEW SAVINGS</button>
+                        </>
 
-                                    <>
-                                        <h5><span>ETH: </span>{ETHBalance}</h5>
-                                    </>
+                    }
 
+                    {(!depositSuccess && !loading && approved && (stETH !== BigInt(0) || ETH !== BigInt(0))) &&
+                        <>
+                            <button onClick={handleView}>ESTIMATE SAVINGS</button>
+                        </>
 
+                    }
 
-                                    <>
-                                        <h5><span>stETH:</span> {stETHBalance}</h5>
-                                    </>
-                                </fieldset>
 
 
-                            )
-                            }
 
-{(depositSuccess) &&
-                                <>
-                                    <button onClick={handleView}>VIEW SAVINGS</button>
-                                </>
 
-                            }
 
-                            {(!depositSuccess && !loading && approved && (stETH !== BigInt(0) || ETH !== BigInt(0))) &&
-                                <>
-                                    <button onClick={handleView}>ESTIMATE SAVINGS</button>
-                                </>
 
-                            }
 
 
 
-                          
 
 
 
+                </div>
 
 
 
 
 
 
-                        </div>
 
 
 
@@ -1708,20 +1759,14 @@ try {
 
 
 
+                <br />
 
 
 
 
 
 
-                        <br />
-
-
-
-
-
-
-                    </div>)}
+            </div>
 
 
             {showModal2 && (
@@ -1739,12 +1784,12 @@ try {
                         },
                         content: {
                             alignSelf: 'center',
-                            margin: '10px',
+                            margin: '5px',
                             fontFamily: '"Roboto", sans-serif',
                             maxWidth: '90%',
                             width: '300px',
                             height: 'auto',
-                            padding: "7vh 0",
+                            padding: "5vh 0",
                             zIndex: "999",
                             position: 'fixed',
                             top: '55%',
@@ -1755,6 +1800,7 @@ try {
                             border: '0',
                             borderRadius: '20px',
                             boxShadow: '0px 5px 10px rgba(0, 0, 0, 0.25)',
+
                             gap: "2"
                         },
                     }}
@@ -1803,7 +1849,10 @@ try {
                             (dexGas !== BigInt(0)) && (
                                 <>
                                     <>
-                                        <h5><span>Gas on Dex:</span> {wei(Number(dexGas * gasPrice))}</h5>
+                                        <h5><span>Gas on Dex (x gasPrice):</span> {formatEther(dexGas * gasPrice)}</h5>
+                                    </>
+                                    <>
+                                        <h5><span>Gas on Dex (returned):</span> {Number(dexGas)}</h5>
                                     </>
                                     <>
                                         <h5><span>{depositSuccess ? ("You saved:") : ("You will save:")} </span>
@@ -1811,11 +1860,31 @@ try {
 
                                             {
 
-                                                Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ? (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>) : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
                                             } in Gas </h5>
                                     </>
 
 
+
+                                </>
+                            )
+                        }
+                        {
+                            (altrETH !== 0) && (
+                                <>
+                                    <>
+                                        <h5><span>{depositSuccess ? ("You received") : ("You will receive")} </span> {
+
+
+                                            Number(estReth) - altrETH >= 0 ?
+                                                (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
+                                                : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
+
+
+                                        } <span>more rETH</span></h5>
+                                    </>
 
                                 </>
                             )
@@ -1830,11 +1899,11 @@ try {
 
 
 
-{(approved && !newTransactionBool && !loading) &&
+            {(approved && !newTransactionBool && !loading) &&
 
-<button className={classes.lonerButton} onClick={Deposit}>Deposit</button>
+                <button className={classes.lonerButton} onClick={Deposit}>Deposit</button>
 
-}
+            }
 
 
 
