@@ -137,7 +137,7 @@
  }
 
  .specialH5 {
-  font-weight: 600 !important;
+  font-weight: 500 !important;
  color: rgb(30, 132, 124);
  }
 
@@ -204,6 +204,10 @@
   }
 
 
+  .rebateH5 {
+
+  }
+
 
 .speshModal::-webkit-scrollbar {
   display: none;
@@ -211,7 +215,8 @@
 }
 
   .speshSpan {
-    color: green
+    color: green;
+    font-weight: 600 !important;
   }
 
   .modalCont > h3 {

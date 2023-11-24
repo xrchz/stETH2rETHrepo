@@ -4,20 +4,21 @@ import Modal from "react-modal";
 import { AiOutlineClose } from 'react-icons/ai'
 
 import classes from './main.module.css';
-import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, decodeEventLog, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
 import { mainnet } from 'viem/chains';
 import "viem/window";
+import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 import stETH2rETHabi from "../../abi/stETH2rETH.json"
 import rETHabi from "../../abi/rETH.json"
 import stethAbi from "../../abi/stETH.json"
 import wstETHAbi from "../../abi/wstETH.json"
-
+import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json'
 import { CSSProperties } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
-
+import { ethers } from "ethers";
 import UniAbi from "../uniTest/libs/UniAbi.json"
 import {
     AlphaRouter,
@@ -31,8 +32,13 @@ import {
 } from '../uniTest/libs/providers.ts'
 import {
     WSTETH_TOKEN,
-    WETH_TOKEN
+    WETH_TOKEN,
+    STETH_TOKEN,
+    RETH_TOKEN,
+    USDC_TOKEN,
+    MAX_FEE_PER_GAS
 } from '../uniTest/libs/constants.ts'
+import { computePoolAddress } from '@uniswap/v3-sdk'
 
 
 
@@ -73,7 +79,6 @@ function Main() {
     const [ETHBalance, setETHBalance] = useState<string | undefined>("")
     const [stETHBalance, setstETHBalance] = useState<string | undefined>("")
     const [finrETH, setFinrETH] = useState<boolean>(false);
-
     const [isReadyToApprove, setIsReadyToApprove] = useState(false);
     const [loading, setLoading] = useState(false);
     const [color, setColor] = useState("#ffffff");
@@ -83,6 +88,8 @@ function Main() {
     const [wallet, setWallet] = useState(undefined);
     const [currentWETHRoute, setCurrentWETHRoute] = useState<SwapRoute | undefined>(undefined)
     const [currentWSTETHRoute, setCurrentWSTETHRoute] = useState<SwapRoute | undefined>(undefined)
+    const [currentUSDCRoute, setCurrentUSDCRoute] = useState<SwapRoute | undefined>(undefined)
+    const [USD, setUSD] = useState<number>(0)
     const [altrETH, setAltrETH] = useState(0)
     const [dexGas, setDexGas] = useState<BigInt>(BigInt(0));
     const [dexWGas, setDexWGas] = useState<BigInt>(BigInt(0));
@@ -92,11 +99,151 @@ function Main() {
     const [routeGenerated, setRouteGenerated] = useState(false);
     const [timeForEstimates, setTimeForEstimates] = useState(false);
     const [gasPrice, setGasPrice] = useState<BigInt | undefined>(BigInt(0))
+    const [ETHprice, setETHprice] = useState("");
+    const [rETHSavingsToETH, setrETHSavingsToETH] = useState<BigInt>()
+    const [USDCquote, setUSDCquote] = useState<number>()
+
+
+
+
+    const apiUrl = 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,JPY,EUR&api_key=e81c2faadb254039651a17c32ce94db1e8e141f8ba3e82db6d81953ec6094cf8';
+    const geckoApiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd";
+
+
+    const handleETHprice = () => {
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log("HANDLE ETH PRICE:" + data.USD);
+                // Handle the data here
+
+                setETHprice(data.USD)
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+
+    }
+
+    useEffect(() => {
+
+
+        const timeoutId = setTimeout(handleETHprice, 6000);
+
+        return () => clearTimeout(timeoutId);
+
+
+
+
+    }, [ETHprice])
+
+
+    function roundToTwoDecimalPlaces(number) {
+    // Using the toFixed method to round to 2 decimal places
+    return parseFloat(number.toFixed(2));
+}
+
+
+
+    const getQuoute = async () => {
 
 
 
 
 
+
+        const currentPoolAddress = computePoolAddress({
+            factoryAddress: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+            tokenA: CurrentConfig.tokens.in,
+            tokenB: CurrentConfig.tokens.out,
+            fee: CurrentConfig.tokens.poolFee,
+        })
+
+
+        const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4")
+        const poolContract = new ethers.Contract(
+            currentPoolAddress,
+            IUniswapV3PoolABI.abi,
+            provider
+        )
+
+
+
+        const quoterContract = new ethers.Contract(
+            '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
+            Quoter.abi,
+            getMainnetProvider()
+        )
+
+
+        const [token0, token1, fee, liquidity, slot0] = await Promise.all([
+            poolContract.token0(),
+            poolContract.token1(),
+            poolContract.fee(),
+            poolContract.liquidity(),
+            poolContract.slot0(),
+        ])
+
+
+        console.log("Token o:" + token0)
+
+        const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
+            token0, token1, fee,
+            fromReadableAmount(
+                CurrentConfig.tokens.amountIn,
+                CurrentConfig.tokens.in.decimals
+            ).toString(),
+
+            0
+        )
+
+        let formatted = Number(formatEther(quotedAmountOut));
+        let newQuote = 1 / formatted;
+
+        console.log("quotedAmountOut" + newQuote);
+
+        setUSDCquote(newQuote);
+
+
+    }
+
+
+    useEffect(() => {
+
+
+
+
+
+        if (!depositSuccess) {
+
+            const timeoutId = setTimeout(getQuoute, 6000);
+
+            return () => clearTimeout(timeoutId);
+
+
+        }
+
+    }, [USDCquote])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4
 
 
 
@@ -113,6 +260,8 @@ function Main() {
 
         const newPrice = await client.getGasPrice()
 
+        console.log("Format of the gasPrice" + newPrice);
+
 
         setGasPrice(newPrice)
 
@@ -120,14 +269,26 @@ function Main() {
     }
 
 
+    const fetchData = () => {
+        retrieveCurrentGasPrice();
+    };
+
+
     useEffect(() => {
-        const fetchData = () => {
-            retrieveCurrentGasPrice();
-        };
 
-        const timeoutId = setTimeout(fetchData, 6000);
 
-        return () => clearTimeout(timeoutId);
+
+        if (!depositSuccess) {
+
+            const timeoutId = setTimeout(fetchData, 6000);
+
+            return () => clearTimeout(timeoutId);
+
+
+        }
+
+
+
 
     }, [gasPrice]);
 
@@ -142,10 +303,10 @@ function Main() {
     const getContractBalance = async () => {
 
 
+        let rETH = BigInt(0);
 
 
-
-        const rETH = await client.readContract({
+        rETH = await client.readContract({
             address: rETHcontract,
             abi: rETHabi,
             functionName: 'balanceOf',
@@ -153,9 +314,14 @@ function Main() {
         })
 
 
+        const spesh = wei(Number(rETH))
 
 
-        if (estReth !== undefined && Number(rETH) >= parseInt(estReth)) {
+        console.log("THIS IS THE rETH you're looking for:" + spesh)
+        console.log("THIS IS THE estrETH you're looking for:" + estReth)
+
+
+        if (estReth !== undefined && spesh >= Number(estReth)) {
 
 
             setErrorMessage("")
@@ -178,7 +344,79 @@ function Main() {
     }
 
 
+    function floatToBigInt(floatValue, precision = 18) {
+        const multiplier = 10 ** precision;
+        const intValue = Math.round(floatValue * multiplier);
+        return BigInt(intValue);
+    }
 
+
+    const handleRETHtoETH = async () => {
+
+
+        let value = Number(estReth) - altrETH;
+
+        if (value < 0) {
+
+            value = value * -1;
+        }
+
+
+        const intValue = floatToBigInt(value)
+
+        console.log("typeof value for rETH" + typeof value)
+        console.log("Lets see the intValue:" + intValue)
+
+
+
+
+
+        let ETHAmount = await client.readContract({
+            address: rETHcontract,
+            abi: rETHabi,
+            functionName: 'getEthValue',
+            args: [intValue]
+        })
+
+
+        console.log("ETH amount FROM rETH savings:" + ETHAmount);
+
+        console.log(typeof ETHAmount);
+
+
+
+
+
+
+
+
+        setrETHSavingsToETH(ETHAmount);
+
+
+    }
+
+
+    useEffect(() => {
+
+        handleRETHtoETH()
+
+    }, [altrETH])
+
+
+    useEffect(() => {
+
+        console.log("rETHSavingsToETH: " + rETHSavingsToETH)
+
+    }, [rETHSavingsToETH])
+
+
+
+
+    useEffect(() => {
+
+        generateUSDCRoute();
+
+    }, [])
 
 
 
@@ -378,7 +616,59 @@ function Main() {
         setDepositSuccess(false);
         setRouteGenerated(false);
         setTimeForEstimates(false);
+        fetchData();
 
+    }
+
+
+
+    // ESTABLISH USDC UNISWAP ROUTE
+
+
+
+    async function generateUSDCRoute(): Promise<SwapRoute | null> {
+
+
+        let route;
+
+
+        const router = new AlphaRouter({
+            chainId: 1,
+            provider: getMainnetProvider(),
+        })
+
+        const options: SwapOptionsSwapRouter02 = {
+            recipient: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+            slippageTolerance: new Percent(50, 10_000),
+            deadline: Math.floor(Date.now() / 1000 + 1800),
+            type: SwapType.SWAP_ROUTER_02,
+        }
+
+
+        console.log(ETH);
+        console.log(typeof ETH)
+
+
+
+
+
+
+        route = await router.route(
+            CurrencyAmount.fromRawAmount(
+                USDC_TOKEN,
+
+                100000000000000000,
+
+            ),
+            CurrentConfig.tokens.out,
+            TradeType.EXACT_INPUT,
+            options
+        )
+
+
+        setCurrentUSDCRoute(route);
+
+        return route
     }
 
 
@@ -422,7 +712,7 @@ function Main() {
                 Number(ETH),
 
             ),
-            CurrentConfig.tokens.out,
+            RETH_TOKEN,
             TradeType.EXACT_INPUT,
             options
         )
@@ -481,13 +771,10 @@ function Main() {
 
         route = await router.route(
             CurrencyAmount.fromRawAmount(
-                WSTETH_TOKEN,
-                fromReadableAmount(
-                    wei(Number(wstETHAmount)),
-                    WSTETH_TOKEN.decimals
-                ).toString()
+                STETH_TOKEN,
+                Number(stETH),
             ),
-            CurrentConfig.tokens.out,
+            RETH_TOKEN,
             TradeType.EXACT_INPUT,
             options
         )
@@ -593,6 +880,104 @@ function Main() {
 
 
     }
+
+
+
+    // generate US Dollar data
+
+    async function executeUSDCRoute(
+        route: SwapRoute
+    ) {
+
+
+        const { functionName, args } = decodeFunctionData({
+            abi: UniAbi,
+            data: route?.methodParameters?.calldata
+        })
+
+
+        const gas = await client.estimateContractGas({
+            address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+            abi: UniAbi,
+            functionName,
+            args,
+            account: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+        })
+
+        /* const value = decodeFunctionResult({
+             abi: UniAbi,
+             functionName,
+             data: result
+           })*/
+
+
+
+
+        setDexStGas(gas);
+
+        const { result } = await client.simulateContract({
+            address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+            abi: UniAbi,
+            functionName,
+            args,
+            account: '0xb7995A51733FF820bbEEFb28770b688B10c1FcFb',
+        })
+
+
+
+
+
+
+        return result;
+
+
+    }
+
+
+
+    useEffect(() => {
+
+
+
+        const getUSD = async () => {
+
+
+            if (currentUSDCRoute !== undefined) {
+
+                try {
+
+                    let newUSD
+                    newUSD = await executeUSDCRoute(currentUSDCRoute);
+
+
+
+                    setUSD(wei(hexToNumber(newUSD)));
+                    console.log(USD)
+
+                } catch (e) {
+                    console.log(e)
+                }
+
+            }
+
+        }
+
+        const timeoutId = setTimeout(getUSD, 3000);
+
+        return () => clearTimeout(timeoutId);
+
+
+
+
+
+
+    }, [USD])
+
+
+
+
+
+
 
 
     // GET wETH UNISWAP rETH
@@ -888,6 +1273,16 @@ function Main() {
     }
 
 
+    //CHECKER FOR RETHTOETH
+
+
+    useEffect(() => {
+
+        console.log(rETHSavingsToETH)
+        console.log(typeof rETHSavingsToETH)
+
+    }, [rETHSavingsToETH])
+
 
 
     //BALANCE CHECKER ETH
@@ -969,6 +1364,7 @@ function Main() {
 
 
         setLoading(true);
+        generateRoute();
 
 
 
@@ -1006,6 +1402,22 @@ function Main() {
         //rETHBalance();
     }
 
+
+
+    
+  function convertBigIntToJSON(obj) {
+    if (typeof obj === 'bigint') {
+      return obj.toString();
+    } else if (Array.isArray(obj)) {
+      return obj.map(convertBigIntToJSON);
+    } else if (typeof obj === 'object') {
+      for (const key in obj) {
+        obj[key] = convertBigIntToJSON(obj[key]);
+      }
+    }
+    return obj;
+  }
+
     useEffect(() => {
         ; (async () => {
             if (hash) {
@@ -1023,7 +1435,14 @@ function Main() {
                     setLoading(false);
 
 
-                    let finGas = receipt.cumulativeGasUsed
+                    let finGas = receipt.gasUsed
+                   
+
+
+                    console.log("Object keys for gasUsed:" + Object.keys(receipt))
+                   
+
+                 
                     setFinalGas(finGas);
                     setGas(finGas)
                     setApproved(false);
@@ -1065,6 +1484,8 @@ function Main() {
 
             setAccount(address)
             setLoading(false)
+
+
 
 
 
@@ -1284,6 +1705,7 @@ function Main() {
 
 
     }
+
 
 
 
@@ -1574,10 +1996,10 @@ function Main() {
 
 
 
-                    {/*
-                        <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                            <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button>
-                         */}
+{/*
+                    <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
+
 
 
 
@@ -1628,11 +2050,11 @@ function Main() {
 
                     }
 
-{(approved && !newTransactionBool && !loading) &&
+                    {(approved && !newTransactionBool && !loading) &&
 
-<button id={classes.buttonId} onClick={Deposit}>Deposit</button>
+                        <button id={classes.buttonId} onClick={Deposit}>Deposit</button>
 
-}
+                    }
 
 
 
@@ -1659,7 +2081,7 @@ function Main() {
                 </div>
                 <div className={classes.box}>
 
-                    <h3>{depositSuccess ?  ("Final receipt") : ("Estimated fees/rETH ") }</h3>
+                    <h3>{depositSuccess ? ("Final receipt") : ("Estimated fees/rETH ")}</h3>
 
 
 
@@ -1684,21 +2106,12 @@ function Main() {
 
                     }
 
-                    {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates) && (
-                        <>
-                            <h5><span>Estimated Gas (Returned):</span> {Number(gas)}</h5>
-                        </>
-                    )
-
-                    }
 
                     {(finalGas !== BigInt(0) && !loading) && (<>
                         <h5><span>Transaction cost (ETH):</span> {formatEther(finalGas * gasPrice)}</h5>
                     </>)}
 
-                    {(finalGas !== BigInt(0) && !loading) && (<>
-                        <h5><span>Final Gas:</span> {Number(finalGas)}</h5>
-                    </>)}
+
 
 
 
@@ -1718,13 +2131,140 @@ function Main() {
                     )}
 
 
+                    {(depositSuccess) && (
 
-                    {(depositSuccess) &&
                         <>
-                            <button onClick={handleView}>VIEW SAVINGS</button>
-                        </>
+
+
+
+
+
+                            <ClipLoader
+                                color={color}
+                                loading={altrETH === 0}
+                                cssOverride={override}
+                                size={130}
+                                aria-label="Loading Spinner"
+                                data-testid="loader"
+                            />
+
+
+                            {
+                                (altrETH !== 0 && dexGas !== BigInt(0)) && (
+                                    <>
+                                        <>
+                                            <h5 className={classes.rebateH5}>
+
+                                                {depositSuccess ? ("You saved") : ("You will save")}   {
+
+                                                    Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
+                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
+
+
+                                                    Number(estReth) - altrETH >= 0 ?
+                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
+                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
+
+
+                                                } extra rETH.   </h5>
+                                        </>
+                                        <>
+
+
+                                            <h5 className={classes.rebateH5}><span> {depositSuccess ? ("Your total rebate is ") : ("Your total rebate will be ")}  {
+
+
+
+
+
+
+                                                (wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote) >= 0 ?
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>${
+
+
+                                                        Number(estReth) >= altrETH ? (
+
+                                                            roundToTwoDecimalPlaces((wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote))
+
+
+                                                        ) : (
+
+                                                            roundToTwoDecimalPlaces(((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote))
+
+                                                        )
+
+
+                                                    }
+                                                    </span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>${
+
+
+                                                        Number(estReth) >= altrETH ? (
+
+                                                            roundToTwoDecimalPlaces((wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote))
+
+
+                                                        ) : (
+
+                                                            roundToTwoDecimalPlaces(
+                                                                ((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote)
+                                                                )
+
+                                                        )
+
+
+
+
+
+
+
+
+                                                    }
+
+
+
+                                                    </span>)
+
+
+
+
+
+
+
+
+
+
+                                            }</span></h5>
+
+
+
+                                        </>
+
+                                    </>
+
+                                )
+
+
+
+                            }
+
+
+
+
+
+
+
+                        </>)
+
+
+
 
                     }
+
+
+
 
                     {(!depositSuccess && !loading && approved && (stETH !== BigInt(0) || ETH !== BigInt(0))) &&
                         <>
@@ -1849,45 +2389,118 @@ function Main() {
                             (dexGas !== BigInt(0)) && (
                                 <>
                                     <>
-                                        <h5><span>Gas on Dex (x gasPrice):</span> {formatEther(dexGas * gasPrice)}</h5>
+                                        <h5><span>Gas on Dex:</span> {formatEther(dexGas * gasPrice)}</h5>
                                     </>
-                                    <>
-                                        <h5><span>Gas on Dex (returned):</span> {Number(dexGas)}</h5>
-                                    </>
-                                    <>
-                                        <h5><span>{depositSuccess ? ("You saved:") : ("You will save:")} </span>
 
-
-                                            {
-
-                                                Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
-                                            } in Gas </h5>
-                                    </>
 
 
 
                                 </>
                             )
                         }
+
+
+
                         {
-                            (altrETH !== 0) && (
+                            (altrETH !== 0 && dexGas !== BigInt(0)) && (
                                 <>
                                     <>
-                                        <h5><span>{depositSuccess ? ("You received") : ("You will receive")} </span> {
+                                        <h5>
+
+                                            {depositSuccess ? ("You saved") : ("You will save")}   {
+
+                                                Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                            } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 
 
-                                            Number(estReth) - altrETH >= 0 ?
-                                                (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
-                                                : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
+                                                Number(estReth) - altrETH >= 0 ?
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
 
 
-                                        } <span>more rETH</span></h5>
+                                            } extra rETH.   </h5>
+                                    </>
+                                    <>
+
+
+                                        <h5><span> {depositSuccess ? ("Your total rebate is ") : ("Your total rebate will be ")}  {
+
+
+
+
+
+
+                                            (wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote) >= 0 ?
+                                                (<span className={classes.speshSpan} style={{ color: "green" }}>${
+
+
+                                                    Number(estReth) >= altrETH ? (
+
+                                                        
+
+                                                        roundToTwoDecimalPlaces((wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote))
+
+
+                                                    ) : (
+                                                        
+
+                                                        roundToTwoDecimalPlaces(((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote))
+
+                                                    )
+
+
+                                                }
+                                                </span>)
+                                                : (<span className={classes.speshSpan} style={{ color: "red" }}>${
+
+
+                                                    Number(estReth) >= altrETH ? (
+
+                                                        roundToTwoDecimalPlaces((wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote))
+
+
+                                                    ) : (
+
+                                                        roundToTwoDecimalPlaces((((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote)))
+
+                                                    )
+
+
+
+
+
+
+
+
+                                                }
+
+
+
+                                                </span>)
+
+
+
+
+
+
+
+
+
+
+                                        }</span></h5>
+
+
+
                                     </>
 
                                 </>
+
                             )
+
+
+
                         }
 
                     </div>

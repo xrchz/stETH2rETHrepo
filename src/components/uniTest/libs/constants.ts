@@ -49,6 +49,17 @@ export const WSTETH_TOKEN = new Token(
 'Wrapped liquid staked Ether'
 )
 
+export const STETH_TOKEN = new Token(
+  SUPPORTED_CHAINS[0],
+'0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+18,
+'STETH',
+'stETH'
+)
+
+
+
+
 // ABI's
 
 export const ERC20_ABI = [
