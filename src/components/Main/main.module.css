@@ -5,20 +5,20 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2vh 0;
+    padding: 3vh 0;
   }
   
   .wrapper {
   
     height: auto;
-    width: 93%;
+    width: 90%;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: center;
     gap: 2rem;
    
-    padding-bottom: 4vh;
+    padding-bottom: 2vh;
 
     
   
@@ -40,6 +40,28 @@
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
     font-weight: 400;
+    
+  
+  }
+
+
+  .box1 {
+    width: auto;
+    min-height: 15px;
+    height: auto;
+    padding: 1vh 3vh;
+    display: flex;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
+    border: 0.5px solid #222;
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+    background: #ffffff;
+   
+  gap: 5rem;
+    border-radius: 10px;
+    font-weight: 400;
+    margin-bottom: 3vh;
     
   
   }
@@ -73,6 +95,23 @@
     
   }
 
+
+  .box1 >  h5 {
+    font-size: 22px;
+    text-align: center;
+    font-weight: 300;
+   
+    word-wrap: break-word;
+   
+  
+    
+  }
+
+
+  .box1 >  h5 > span {
+    color: rgb(21, 149, 77);
+    font-weight: 500;
+  }
 
 
 
@@ -257,10 +296,11 @@
 
 
   .error {
-    font-size: 25px;
+    font-size: 24px;
     padding: 0.5vh 0;
     padding-top: 3vh;
     height:auto;
+    width: 80%;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -271,9 +311,10 @@
   }
 
   .error2 {
-    font-size: 25px;
+    font-size: 24px;
     padding: 0.5vh 0;
     height:auto;
+    width: 80%;
     font-weight: 600;
     gap: 0.5rem;
 display: none;
@@ -319,6 +360,16 @@ align-items: center;
       padding-bottom: 0vh;
     }
 
+
+    .box1 {
+    flex-direction: column;
+    width: 60%;
+    gap: 1rem;
+    padding: 3vh 3vh;
+      
+    
+    }
+
     #buttonId {
       display: flex;
      }
@@ -328,7 +379,7 @@ align-items: center;
      }
 
     .box {
-      width: 80%;
+      width: 70%;
       min-height: 200px;
       height: auto;
       justify-content: center;
@@ -337,6 +388,8 @@ align-items: center;
 
      
     }
+
+    
 
 
     .lonerButton {
@@ -350,6 +403,11 @@ align-items: center;
 
     .box > h5 {
       font-size: 18px;
+    }
+
+    .box1 > h5 {
+      font-size: 18px;
+      width: 90%;
     }
 
     .box > h3 {
@@ -381,10 +439,20 @@ align-items: center;
 
     .box {
       font-size: 16px;
+      width:80%;
+    }
+
+    .box1 {
+      width: 70%;
+    
     }
 
    
     .box > h5 {
+      font-size: 17px;
+    }
+
+    .box1 > h5 {
       font-size: 17px;
     }
 

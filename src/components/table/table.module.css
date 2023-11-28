@@ -45,6 +45,12 @@ td, th {
 }
 
 
+.specialTD {
+    color: rgb(21, 149, 77);
+    font-weight: 500;
+}
+
+
 @media (max-width: 600px) {
 
 

@@ -51,7 +51,7 @@ const override: CSSProperties = {
 
 
 
-function Main({TOTAL1}) {
+function Main() {
 
 
     const [account, setAccount] = useState<Address>();
@@ -103,28 +103,10 @@ function Main({TOTAL1}) {
     const [rETHSavingsToETH, setrETHSavingsToETH] = useState<BigInt>()
     const [USDCquote, setUSDCquote] = useState<number>()
     const [baseFee, setBaseFee] = useState<BigInt>(BigInt(0))
-
+    
 
     const [balanceBoolETH, setBalanceBoolETH] = useState<boolean>(true)
     const [balanceBoolstETH, setBalanceBoolstETH] = useState<boolean>(true)
-    const [validBoolETH, setValidBoolETH] = useState<boolean>(true)
-    const [validBoolstETH, setValidBoolstETH] = useState<boolean>(true)
-
-    const [rETHContractBalance, setrETHContractBalance] = useState<string>("")
-
-
-    const [depositPeriod, setDepositPeriod] = useState<boolean>(false)
-    const [total, setTotal] = useState(0)
-
-
-
-    useEffect(() => {
-
-
-        setTotal(TOTAL1)
-
-
-    },[TOTAL1] )
 
 
 
@@ -164,18 +146,9 @@ function Main({TOTAL1}) {
 
 
     function roundToTwoDecimalPlaces(number) {
-        // Using the toFixed method to round to 2 decimal places
-        return parseFloat(number.toFixed(2));
-    }
-
-
-    function roundToFiveDecimalPlaces(number) {
-        // Using the toFixed method to round to 5 decimal places
-
-
-        let newNum = Number(number)
-        return parseFloat(newNum.toFixed(5));
-    }
+    // Using the toFixed method to round to 2 decimal places
+    return parseFloat(number.toFixed(2));
+}
 
 
 
@@ -288,11 +261,6 @@ function Main({TOTAL1}) {
         .extend(publicActions)
         .extend(walletActions)
 
-
-
-
-
-        
     const retrieveCurrentGasPrice = async () => {
 
         const newPrice = await client.getGasPrice()
@@ -329,74 +297,45 @@ function Main({TOTAL1}) {
 
     }, [gasPrice]);
 
-    
 
 
 
 
-    useEffect(() => {
+const getBaseFee = async() => {
+
+    let block = await client.getBlock();
 
 
-      
+    console.log("This is the block:" + Object.keys(block))
 
 
-        const timeoutId = setTimeout(getContractBalance, 6000);
+    setBaseFee(block.baseFeePerGas);
+
+
+
+}
+
+
+useEffect(() => {
+
+
+    if (!depositSuccess) {
+
+        const timeoutId = setTimeout(getBaseFee, 6000);
 
         return () => clearTimeout(timeoutId);
-
-
-    }, [rETHContractBalance])
-
-    useEffect(() => {
-
-
-      
-
-
-       getContractBalance();
-
-
-    }, [])
-
-
-
-
-
-    const getBaseFee = async () => {
-
-        let block = await client.getBlock();
-
-
-        console.log("This is the block:" + Object.keys(block))
-
-
-        setBaseFee(block.baseFeePerGas);
-
 
 
     }
 
 
-    useEffect(() => {
 
-
-        if (!depositSuccess) {
-
-            const timeoutId = setTimeout(getBaseFee, 6000);
-
-            return () => clearTimeout(timeoutId);
-
-
-        }
-
-
-
-    }, [baseFee])
+}, [baseFee])
 
 
 
 
-
+    
 
 
     function wei(number) {
@@ -420,20 +359,14 @@ function Main({TOTAL1}) {
         })
 
 
-        let spesh = wei(Number(rETH))
-
-        let numrETH = Number(estReth)
-
-
-
-        setrETHContractBalance(spesh);
+        const spesh = wei(Number(rETH))
 
 
         console.log("THIS IS THE rETH you're looking for:" + spesh)
         console.log("THIS IS THE estrETH you're looking for:" + estReth)
 
 
-        if (spesh >= numrETH) {
+        if (estReth !== undefined && spesh >= Number(estReth)) {
 
 
             setErrorMessage("")
@@ -443,13 +376,11 @@ function Main({TOTAL1}) {
 
 
         } else {
-if(depositPeriod === false) {
-            setErrorMessage("Not enough rETH in the Rocket Rebate contract. Please enter different values.")
+
+            setErrorMessage("Not enough rETH in the Rocket Rebate contract.")
             setApproved(false);
             setIsReadyToApprove(false);
             setTimeForEstimates(false);
-}
-
 
         }
 
@@ -597,29 +528,26 @@ if(depositPeriod === false) {
             console.log("fORMAT rETH:" + formatrETH);
 
 
-            let rETHwithFee = Number(formatEther(rETHAmount));
+            let rETHwithFee = wei(Number(rETHAmount));
 
 
-            let defray = (1000000 * Number(formatEther(baseFee)) * (Number(formatEther(ETH)) + Number(formatEther(stETH)))) / wei(32);
+           let defray = (1000000 * wei(Number(baseFee)) * (wei(Number(ETH)) + wei(Number(stETH))))/wei(32);
 
 
-            console.log("This is Andy defray:" + defray);
+           console.log("This is Andy defray:" +  defray)
 
 
-            let actualReth = wei(Number(rETHAmount) - defray);
+           let actualReth = wei(Number(rETHAmount) - defray);
+
+          
+
+
 
             setEstReth(actualReth.toString());
 
         } catch (e) {
 
             console.log(e)
-            setApproved(false)
-            setTimeForEstimates(false);
-            setIsReadyToApprove(false);
-
-            if (depositPeriod === false ) {
-                setErrorMessage("This deposit will revert. Try a smaller amount(s) to match the rETH balance of the Rocket Rebate contract.")
-            }
 
 
         }
@@ -761,7 +689,6 @@ if(depositPeriod === false) {
         fetchData();
         getQuoute();
         getBaseFee();
-        setDepositPeriod(false);
 
     }
 
@@ -1302,7 +1229,6 @@ if(depositPeriod === false) {
         } catch (e) {
             setLoading(false);
             alert(e)
-            setErrorMessage("")
         }
 
 
@@ -1318,31 +1244,20 @@ if(depositPeriod === false) {
                 const receipt = await client.waitForTransactionReceipt({ hash: approvalHash })
                 setApprovalReceipt(receipt)
 
-                console.log(receipt)
-
 
                 if (receipt.status === "success") {
 
                     setApproved(true);
                     setLoading(false);
                     setIsReadyToApprove(false);
-
-                    allowanceCheck();
-                    setErrorMessage2("")
-                    setErrorMessage("")
-                    setLoading(false);
+                    balanceCheck();
 
 
 
-                } else {
-
-                    setErrorMessage2("")
-                    setErrorMessage("")
-                    setLoading(false);
                 }
 
             } else {
-
+                setLoading(false);
 
             }
         })()
@@ -1416,10 +1331,10 @@ if(depositPeriod === false) {
         if (stETH <= balance) {
 
             allowanceCheck();
+            
 
-
-
-            setBalanceBoolstETH(true)
+            
+          setBalanceBoolstETH(true)
 
 
 
@@ -1428,20 +1343,16 @@ if(depositPeriod === false) {
 
             setBalanceBoolstETH(false);
 
-            if (stETHChecked) {
-
-                if (!depositSuccess) {
-                    setErrorMessage("You have insufficient stETH.")
-
-                    setTimeForEstimates(false);
-                    setApproved(false);
-                    setIsReadyToApprove(false)
-                }
+            if(stETHChecked) {
+            setErrorMessage("You have insufficient stETH.")
+            setTimeForEstimates(false);
+            setApproved(false);
+            setIsReadyToApprove(false)
 
             }
-
-
-
+            
+          
+          
 
 
         }
@@ -1481,21 +1392,21 @@ if(depositPeriod === false) {
 
 
 
-        if (ETH <= balance && ETH > 0 && !isReadyToApprove) {
+        if (ETH <= balance && ETH > 0  && !isReadyToApprove) {
 
 
             setApproved(true)
-            setTimeForEstimates(true);
-
-            estimateGas();
-            setBalanceBoolETH(true)
-
+                    setTimeForEstimates(true);
+                  
+                    estimateGas();
+                setBalanceBoolETH(true)
+       
 
 
         } else {
-
+           
             if (ETHChecked) {
-                if (isReadyToApprove) {
+                if(isReadyToApprove) {
 
                     setErrorMessage2("Please approve your stETH before entering the ETH value.")
                     setApproved(false)
@@ -1509,15 +1420,15 @@ if(depositPeriod === false) {
                     setErrorMessage2("You have insufficient ETH.")
                     setApproved(false)
                     setTimeForEstimates(false)
-                    setBalanceBoolETH(false);
+                           setBalanceBoolETH(false);
 
                 }
-
-
-
-
-
-
+               
+               
+                
+              
+             
+               
 
             }
 
@@ -1570,27 +1481,11 @@ if(depositPeriod === false) {
         setLoading(true);
         generateRoute();
 
-        setDepositPeriod(true);
-
 
 
         try {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            setErrorMessage("");
-            setErrorMessage2("")
+            estimateGas();
 
             const result = await wallet.writeContract(
                 {
@@ -1608,15 +1503,11 @@ if(depositPeriod === false) {
 
 
 
-
-
         } catch (e) {
             setLoading(false);
             alert(e);
 
-            setErrorMessage2("")
-            setTimeForEstimates(false);
-            setApproved(false);
+
             setNewTransactionBool(true);
         }
 
@@ -1627,27 +1518,20 @@ if(depositPeriod === false) {
     }
 
 
-    useEffect(() => {
 
-        console.log("This is the receipt" + receipt)
-
-    }, [receipt])
-
-
-
-
-    function convertBigIntToJSON(obj) {
-        if (typeof obj === 'bigint') {
-            return obj.toString();
-        } else if (Array.isArray(obj)) {
-            return obj.map(convertBigIntToJSON);
-        } else if (typeof obj === 'object') {
-            for (const key in obj) {
-                obj[key] = convertBigIntToJSON(obj[key]);
-            }
-        }
-        return obj;
+    
+  function convertBigIntToJSON(obj) {
+    if (typeof obj === 'bigint') {
+      return obj.toString();
+    } else if (Array.isArray(obj)) {
+      return obj.map(convertBigIntToJSON);
+    } else if (typeof obj === 'object') {
+      for (const key in obj) {
+        obj[key] = convertBigIntToJSON(obj[key]);
+      }
     }
+    return obj;
+  }
 
     useEffect(() => {
         ; (async () => {
@@ -1667,66 +1551,23 @@ if(depositPeriod === false) {
 
 
                     let finGas = receipt.gasUsed
+                   
 
 
+                    console.log("Object keys for gasUsed:" + Object.keys(receipt))
+                   
 
-                    console.log("Object keys for gasUsed:" + receipt.blockNumber)
-
-
-
-
-                    const JSON = convertBigIntToJSON(receipt.logs);
-
-
-
-                    console.log(JSON)
-
-
-                    for (const log of receipt.logs) {
-                        if (log.address.toLowerCase() === stETH2rETH.toLowerCase()) {
-                            const { eventName, args } = decodeEventLog({
-                                abi: stETH2rETHabi,
-                                data: log.data,
-                                topics: log.topics
-                            })
-
-                            console.log("THIS IS THE TOPIC:" + eventName + args)
-                            setEstReth(formatEther(args[2]))
-                        } else {
-
-                            console.log(log.address);
-                        }
-                    }
-
-
-
-
-
-
-
-
-
-
-
-
-
+                 
                     setFinalGas(finGas);
                     setGas(finGas)
                     setApproved(false);
                     setNewTransactionBool(true);
-                    setDepositSuccess(true);
                     getrETHBalance();
                     balanceCheck();
                     balanceCheckStETH();
-                    getContractBalance();
-                    
-                    setErrorMessage2("")
-                    setErrorMessage("")
+                    setDepositSuccess(true);
 
 
-                } else {
-
-                    setTimeForEstimates(false)
                 }
             }
         })()
@@ -1754,15 +1595,9 @@ if(depositPeriod === false) {
 
             setWallet(newWallet);
 
-            console.log(newWallet);
-
             const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' })
 
-            console.log("This is the address" + address)
-
             setAccount(address)
-
-
             setLoading(false)
 
 
@@ -1842,26 +1677,25 @@ if(depositPeriod === false) {
     useEffect(() => {
 
 
+     
 
 
-
-        if (ETHChecked && ETH !== BigInt(0)) {
-            balanceCheck();
-
+if(ETHChecked && ETH !== BigInt(0)) {
+    balanceCheck();
 
 
-        }
+}
+
+        
+          
+           
+          
+
+          
 
 
-
-
-
-
-
-
-
-
-
+        
+      
     }, [ETH])
 
 
@@ -1878,7 +1712,6 @@ if(depositPeriod === false) {
             setApproved(false)
             setBalanceBoolETH(true);
             balanceCheckStETH();
-            setValidBoolETH(true);
 
 
         }
@@ -1914,18 +1747,9 @@ if(depositPeriod === false) {
 
                             setETHChecked(true)
                             setETH(parseEther(newETH));
-                            setValidBoolETH(true);
-
 
 
                             setErrorMessage2("");
-
-                            if (!validBoolstETH) {
-
-                                setErrorMessage("You have not input a valid number")
-
-                            }
-
 
 
                         } else {
@@ -1934,7 +1758,6 @@ if(depositPeriod === false) {
                             setETH(BigInt(0))
                             setApproved(false)
                             setTimeForEstimates(false)
-                            setValidBoolETH(false);
 
                         }
                     }
@@ -1944,7 +1767,6 @@ if(depositPeriod === false) {
                         setErrorMessage2("You have not input a valid number")
                         setETHChecked(false);
                         setETH(BigInt(0))
-                        setValidBoolETH(false);
                         setApproved(false)
                         setTimeForEstimates(false)
 
@@ -1964,8 +1786,7 @@ if(depositPeriod === false) {
                     setETH(BigInt(0))
                     setApproved(false)
                     setTimeForEstimates(false)
-                    setValidBoolETH(false);
-
+                  
 
 
 
@@ -2012,7 +1833,13 @@ if(depositPeriod === false) {
 
 
 
+        if (ETHChecked || ETH !== BigInt(0)) {
 
+            
+
+            estimateGas();
+
+        }
 
 
 
@@ -2020,11 +1847,11 @@ if(depositPeriod === false) {
         if (stETHChecked) {
 
             balanceCheckStETH();
+            
+         
 
 
-
-
-
+         
 
 
 
@@ -2032,7 +1859,7 @@ if(depositPeriod === false) {
 
 
         } else {
-
+            
 
 
             if (ETHChecked || ETH !== BigInt(0)) {
@@ -2068,9 +1895,7 @@ if(depositPeriod === false) {
                     charCode !== 46 && charCode !== 48 && charCode !== 49) || // Exclude '.' (46), '0' (48), and '1' (49)
                 (charCode >= 58 && charCode <= 64) ||  // More symbols (: to @)
                 (charCode >= 91 && charCode <= 96) ||  // Even more symbols ([ to `)
-                (charCode >= 123 && charCode <= 126) || (charCode === 32) || (charCode === "0.0000000000000000000000000000") || (charCode <= "0.000000000000000000000000000")
-                || (charCode <= "0.00000000000000000000000000") || (charCode <= "0.0000000000000000000000000") || (charCode <= "0.000000000000000000000000") || (charCode <= "0.00000000000000000000000") || (charCode <= "0.0000000000000000000000") || (charCode <= "0.000000000000000000000") || (charCode <= "0.00000000000000000000") || (charCode <= "0.0000000000000000000") || (charCode <= "0.000000000000000000") || (charCode <= "0.00000000000000000") || (charCode <= "0.0000000000000000") || (charCode <= "0.000000000000000") || (charCode <= "0.00000000000000") || (charCode <= "0.0000000000000") || (charCode <= "0.000000000000") || (charCode <= "0.00000000000") || (charCode <= "0.0000000000") || (charCode <= "0.000000000") || (charCode <= "0.00000000") || (charCode <= "0.0000000") || (charCode <= "0.000000") || (charCode <= "0.00000") || (charCode <= "0.0000") || (charCode <= "0.000")
-                || (charCode <= "0.00") || (charCode <= "0.0")   // Some more symbols ({ to ~)
+                (charCode >= 123 && charCode <= 126) || (charCode === 32) || (Number(charCode) <= 0.0000000000000000000000000000)  // Some more symbols ({ to ~)
             ) {
                 return true; // Found a letter or symbol.
             }
@@ -2100,7 +1925,6 @@ if(depositPeriod === false) {
             setBalanceBoolstETH(true);
             balanceCheck();
             setIsReadyToApprove(false)
-            setValidBoolstETH(true);
         }
 
         else if (newStETH === "" && ETHChecked === false) {
@@ -2109,10 +1933,7 @@ if(depositPeriod === false) {
             setStETHChecked(false);
             setStETH(BigInt(0))
             setApproved(false)
-            setBalanceBoolstETH(true);
             setIsReadyToApprove(false)
-            setValidBoolstETH(true);
-
 
         } else {
 
@@ -2149,20 +1970,9 @@ if(depositPeriod === false) {
 
                             setStETHChecked(true)
                             setStETH(parseEther(newStETH));
-                            setValidBoolstETH(true);
-
 
 
                             setErrorMessage("");
-
-
-                            if (!validBoolETH) {
-
-                                setErrorMessage2("You have not input a valid number")
-
-                            }
-
-
 
 
                         } else {
@@ -2171,7 +1981,6 @@ if(depositPeriod === false) {
                             setIsReadyToApprove(false);
                             setApproved(false);
                             setTimeForEstimates(false)
-                            setValidBoolstETH(false);
 
                         }
 
@@ -2181,7 +1990,6 @@ if(depositPeriod === false) {
                         setStETH(BigInt(0))
                         setIsReadyToApprove(false);
                         setTimeForEstimates(false)
-                        setValidBoolstETH(false);
 
 
 
@@ -2194,7 +2002,6 @@ if(depositPeriod === false) {
                     setIsReadyToApprove(false);
                     setStETH(BigInt(0))
                     setTimeForEstimates(false)
-                    setValidBoolstETH(false);
 
                 }
             } else {
@@ -2205,7 +2012,6 @@ if(depositPeriod === false) {
                 setStETHChecked(false);
                 setStETH(BigInt(0))
                 setTimeForEstimates(false)
-                setValidBoolstETH(false);
 
 
             }
@@ -2235,33 +2041,9 @@ if(depositPeriod === false) {
 
     useEffect(() => {
 
-
-
-
-
-        if (estReth !== "" && !finrETH) {
-
-
-            getContractBalance();
-
-
-        }
+        getContractBalance();
 
     }, [estReth])
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2274,11 +2056,7 @@ if(depositPeriod === false) {
         <div className={classes.container}>
 
 
-            <div className={classes.box1}>
 
-                <h5>Contract Balance:<span> {roundToFiveDecimalPlaces(rETHContractBalance)}</span> rETH</h5>
-                <h5>Over <span>${roundToTwoDecimalPlaces(TOTAL1)}</span> saved so far</h5>
-            </div>
             <div className={classes.wrapper}>
                 <div className={classes.box}>
                     <h3>Connect to your Wallet</h3>
@@ -2294,7 +2072,7 @@ if(depositPeriod === false) {
 
                     }
 
-                    {(account) && (
+                    {(account && !loading) && (
 
 
 
@@ -2306,18 +2084,18 @@ if(depositPeriod === false) {
                         <fieldset className={classes.balances} >
                             <legend>Wallet Balances:</legend>
                             < >
-                                <h5><span>rETH:</span> {roundToFiveDecimalPlaces(rETHBalance)}</h5>
+                                <h5><span>rETH:</span> {rETHBalance}</h5>
                             </>
 
 
                             <>
-                                <h5><span>ETH: </span>{roundToFiveDecimalPlaces(ETHBalance)}</h5>
+                                <h5><span>ETH: </span>{ETHBalance}</h5>
                             </>
 
 
 
                             <>
-                                <h5><span>stETH:</span> {roundToFiveDecimalPlaces(stETHBalance)}</h5>
+                                <h5><span>stETH:</span> {stETHBalance}</h5>
                             </>
                         </fieldset>
 
@@ -2339,9 +2117,9 @@ if(depositPeriod === false) {
 
 
 
-
-             {/*       <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
+{/*
+                    <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
 
 
 
@@ -2386,14 +2164,14 @@ if(depositPeriod === false) {
 
                     }
 
-                    {(!approved && !newTransactionBool && account && !loading && isReadyToApprove && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
+                    {(!approved && !newTransactionBool && account && !loading && isReadyToApprove &&  balanceBoolETH && balanceBoolstETH) &&
 
 
                         <button onClick={sendTransaction}>Approve</button>
 
                     }
 
-                    {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
+                    {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH) &&
 
                         <button id={classes.buttonId} onClick={Deposit}>Deposit</button>
 
@@ -2441,17 +2219,17 @@ if(depositPeriod === false) {
 
 
 
-                    {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) && (
+                    {(gas !== BigInt(0) && finalGas === BigInt(0) && !loading && timeForEstimates && balanceBoolETH && balanceBoolstETH) && (
                         <>
-                            <h5><span>Estimated transaction cost (ETH):</span> {roundToFiveDecimalPlaces(formatEther(gas * gasPrice))}</h5>
+                            <h5><span>Estimated transaction cost (ETH):</span> {formatEther(gas * gasPrice)}</h5>
                         </>
                     )
 
                     }
 
 
-                    {(finalGas !== BigInt(0) && !loading && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) && (<>
-                        <h5><span>Transaction cost (ETH):</span> {roundToFiveDecimalPlaces(formatEther(finalGas * gasPrice))}</h5>
+                    {(finalGas !== BigInt(0) && !loading && balanceBoolETH && balanceBoolstETH) && (<>
+                        <h5><span>Transaction cost (ETH):</span> {formatEther(finalGas * gasPrice)}</h5>
                     </>)}
 
 
@@ -2459,16 +2237,16 @@ if(depositPeriod === false) {
 
 
 
-                    {(estReth !== "" && !loading && !finrETH && timeForEstimates && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) && (
+                    {(estReth !== "" && !loading && !finrETH && timeForEstimates && balanceBoolETH && balanceBoolstETH) && (
                         <>
-                            <h5><span>You'll get (in rETH):</span>  {roundToFiveDecimalPlaces(estReth)}</h5>
+                            <h5><span>You'll get (in rETH):</span>  {estReth}</h5>
                         </>
 
                     )}
 
-                    {(estReth !== "" && !loading && finrETH && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) && (
+                    {(estReth !== "" && !loading && finrETH && balanceBoolETH && balanceBoolstETH) && (
                         <>
-                            <h5><span> rETH Received:</span> {roundToFiveDecimalPlaces(estReth)}</h5>
+                            <h5><span> rETH Received:</span> {estReth}</h5>
                         </>
 
                     )}
@@ -2501,14 +2279,14 @@ if(depositPeriod === false) {
                                                 {depositSuccess ? ("You saved") : ("You will save")}   {
 
                                                     Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
-                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
                                                 } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 
 
                                                     Number(estReth) - altrETH >= 0 ?
-                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
-                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
+                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
 
 
                                                 } extra rETH.   </h5>
@@ -2553,7 +2331,7 @@ if(depositPeriod === false) {
 
                                                             roundToTwoDecimalPlaces(
                                                                 ((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote)
-                                                            )
+                                                                )
 
                                                         )
 
@@ -2609,7 +2387,7 @@ if(depositPeriod === false) {
 
 
 
-                    {(!depositSuccess && !loading && approved && timeForEstimates && (stETH !== BigInt(0) || ETH !== BigInt(0)) && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
+                    {(!depositSuccess && !loading && approved && (stETH !== BigInt(0) || ETH !== BigInt(0)) && balanceBoolETH && balanceBoolstETH) &&
                         <>
                             <button onClick={handleView}>ESTIMATE SAVINGS</button>
                         </>
@@ -2672,10 +2450,10 @@ if(depositPeriod === false) {
                             maxWidth: '90%',
                             width: '300px',
                             height: 'auto',
-                            padding: "3.5vh 0",
+                            padding: "5vh 0",
                             zIndex: "999",
                             position: 'fixed',
-                            top: '50%',
+                            top: '55%',
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
                             color: '#222',
@@ -2722,7 +2500,7 @@ if(depositPeriod === false) {
                             (altrETH !== 0) && (
                                 <>
                                     <>
-                                        <h5><span>rETH returned on Dex:</span> {roundToFiveDecimalPlaces(altrETH)}</h5>
+                                        <h5><span>rETH returned on Dex:</span> {altrETH}</h5>
                                     </>
 
                                 </>
@@ -2732,7 +2510,7 @@ if(depositPeriod === false) {
                             (dexGas !== BigInt(0)) && (
                                 <>
                                     <>
-                                        <h5><span>Gas on Dex:</span> {roundToFiveDecimalPlaces(formatEther(dexGas * gasPrice))}</h5>
+                                        <h5><span>Gas on Dex:</span> {formatEther(dexGas * gasPrice)}</h5>
                                     </>
 
 
@@ -2753,14 +2531,14 @@ if(depositPeriod === false) {
                                             {depositSuccess ? ("You saved") : ("You will save")}   {
 
                                                 Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))}</span>)
                                             } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 
 
                                                 Number(estReth) - altrETH >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{Number(estReth) - altrETH}</span>)
+                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{Number(estReth) - altrETH}</span>)
 
 
                                             } extra rETH.   </h5>
@@ -2781,13 +2559,13 @@ if(depositPeriod === false) {
 
                                                     Number(estReth) >= altrETH ? (
 
-
+                                                        
 
                                                         roundToTwoDecimalPlaces((wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote))
 
 
                                                     ) : (
-
+                                                        
 
                                                         roundToTwoDecimalPlaces(((wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) - wei(Number(rETHSavingsToETH))) * Number(USDCquote))
 
@@ -2855,7 +2633,7 @@ if(depositPeriod === false) {
 
 
 
-            {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
+            {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH) &&
 
                 <button className={classes.lonerButton} onClick={Deposit}>Deposit</button>
 

@@ -1,19 +1,34 @@
 
-import React from "react";
+import React, {useState} from "react";
 import classes from './app.module.css';
 import Table from './components/table/Table.tsx';
 import Title from './components/title/Title.jsx';
 import ContractTag from './components/contractTag/ContractTag';
 import Main from "./components/Main/Main.tsx";
+import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, decodeEventLog, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import { mainnet } from 'viem/chains';
 
-import NewCode from "./components/uniTest/newCode.tsx";
-import UniTest from "./components/uniTest/UniTest.tsx";
 
 
 
 
 
 function App() {
+
+
+
+
+
+
+
+
+    const [dataFromChild, setDataFromChild] = useState(0);
+
+    const handleDataFromChild = (data) => {
+      // Do something with the data received from the child
+      setDataFromChild(data);
+    };
+
 
   return (
    
@@ -23,7 +38,7 @@ function App() {
 
       <Title />
 
-    <Main/>
+    <Main TOTAL1={dataFromChild}/>
 
 
 
@@ -34,7 +49,7 @@ function App() {
       <ContractTag />
 
       <div className={classes.tableCont}>
-        <Table />
+        <Table  onDataFromChild={handleDataFromChild} />
 
         
 
