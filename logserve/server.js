@@ -34,7 +34,7 @@ async function processLog(log) {
 }
 
 let block = deployBlock
-while (block <= currentBlockNumber) {
+while (block < currentBlockNumber) {
   const min = block
   const max = Math.min(currentBlockNumber, block + MAX_QUERY_SIZE)
   console.log(`${(new Date()).toLocaleString()} Fetching logs from ${min} to ${max}...`)
