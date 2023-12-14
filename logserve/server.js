@@ -33,6 +33,7 @@ let block = deployBlock
 while (block <= currentBlockNumber) {
   const min = block
   const max = Math.min(currentBlockNumber, block + MAX_QUERY_SIZE)
+  console.log(`${(new Date()).toLocaleString()} Fetching logs from ${min} to ${max}...`)
   const logs = await rocketRebate.queryFilter('Deposit', min, max)
   await Promise.all(logs.map(processLog))
 }
@@ -40,6 +41,7 @@ while (block <= currentBlockNumber) {
 rocketRebate.addListener('Deposit', processLog)
 
 const server = http.createServer((req, res) => {
+  console.log(`${(new Date()).toLocaleString()} Serving request`)
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify(savedLogs))
 })
