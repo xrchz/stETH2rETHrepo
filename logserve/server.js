@@ -13,14 +13,18 @@ const deployBlock = 18198548
 const currentBlockNumber = await provider.getBlockNumber()
 
 const savedLogs = []
+const seenLogs = new Set()
 
 const MAX_QUERY_SIZE = 8192
 
 async function processLog(log) {
+  const receipt = await log.getTransactionReceipt()
+  const id = `${receipt.hash}${log.transactionIndex}`
+  if (seenLogs.has(id)) return
+  seenLogs.add(id)
   const item = {}
   item.eventName = log.eventName
   item.args = Array.from(log.args).slice(1).map(n => n.toString())
-  const receipt = await log.getTransactionReceipt()
   item.gasUsed = receipt.gasUsed.toString()
   item.gasPrice = receipt.gasPrice.toString()
   item.txHash = receipt.hash
@@ -36,6 +40,7 @@ while (block <= currentBlockNumber) {
   console.log(`${(new Date()).toLocaleString()} Fetching logs from ${min} to ${max}...`)
   const logs = await rocketRebate.queryFilter('Deposit', min, max)
   await Promise.all(logs.map(processLog))
+  block = max
 }
 
 rocketRebate.addListener('Deposit', processLog)
