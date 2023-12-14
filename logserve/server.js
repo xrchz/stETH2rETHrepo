@@ -56,6 +56,7 @@ rocketRebate.addListener('Deposit', processLog)
 const server = http.createServer((req, res) => {
   console.log(`${timestamp()} Serving request`)
   res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Access-Control-Allow-Origin', 'https://rocketrebate.io')
   res.end(JSON.stringify(savedLogs))
 })
 
