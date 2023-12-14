@@ -8,10 +8,13 @@
 
   width: 100%;
   height: auto;
+
+
+  min-height: 100vh;
   display: flex;
-padding-bottom: 5vh;
+padding-bottom: 8vh;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
  font-family: "Roboto", sans-serif;
  background: rgb(255,255,255);
@@ -40,6 +43,40 @@ padding-bottom: 5vh;
   position: relative;
 }
 
+
+
+.buttonCont {
+  width: 100%;
+  height: auto;
+  padding: 1vh 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.buttonCont > button {
+
+  background: rgb(30, 132, 124);
+  color: #fff;
+  font-weight: 200;
+  font-size: 15px;
+  
+  text-transform: uppercase;
+  padding: 10px;
+  transition: all 0.2s ease-in-out;
+  border: 0px;
+}
+
+
+.buttonCont > button:hover {
+  background: #333 !important;
+  cursor: pointer !important;
+  color: #fff !important;
+
+
+}
 
 
 

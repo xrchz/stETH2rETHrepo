@@ -1,10 +1,10 @@
 .container {
     height: auto;
-    width: 90%;
+    width: 100%;
     padding: 2vh 0;
     display: flex;
     align-items: center;
-   font-size: 17px;
+    font-size: 17px;
     justify-content: flex-start;
 
 }
@@ -14,27 +14,25 @@
    display: flex;
    justify-content: flex-start;
    gap: 1rem;
-   padding-left: 1vw;
-
-    width: 100%;
-    font-weight: 300;
+   
+   width: auto;
+   font-weight: 300;
    
 }
 
 .addressTextInput {
     border:  0;
     background-color: transparent;
-
-
-   
     font-size: 17px;
     font-weight: 200;
-    width: 30%;
+    
+  
 
 }
 
 .icon {
     cursor: pointer;
+    margin-left: 5px;
 }
 
 
@@ -43,26 +41,30 @@
     .container {
         font-size: 16px;
         
-            width: 85%;
+            width:100%;
             justify-content: center;
         
         
     }
     .addressTextClass {
    
-         width: 90%;
+         width: 100%;
+         flex-direction: column;
+         word-wrap:break-word;
+         align-items: center;
       
-        
+        padding-bottom: 2vh;
      }
 
-     .addressTextInput {
+     .addressText {
         border:  0;
         background-color: transparent;
-       width: 58%;
+        width: 80%;
     
-        margin: 0 0.7vw;
+      text-align: center;
         font-size: 15px;
         font-weight: 200;
+        word-wrap:break-word;
     
     }
         
@@ -73,7 +75,7 @@
     .addressTextInput {
         border:  0;
         background-color: transparent;
-       width: 80%;
+        width: 80%;
     
         font-size: 15px;
      

@@ -18,7 +18,7 @@
     justify-content: center;
     gap: 2rem;
    
-    padding-bottom: 2vh;
+    padding: 2vh 0;
 
     
   
@@ -97,7 +97,7 @@
 
 
   .box1 >  h5 {
-    font-size: 22px;
+    font-size: 20px;
     text-align: center;
     font-weight: 300;
    
@@ -129,8 +129,9 @@
     color: #fff;
     font-weight: 200;
     font-size: 15px;
+    border-radius: 20px;
     text-transform: uppercase;
-    padding: 10px;
+    padding: 12px;
     transition: all 0.2s ease-in-out;
     border: 0px;
   
@@ -145,6 +146,43 @@
   }
 
 
+
+  
+.buttonCont {
+  width: 100%;
+  height: auto;
+  padding: 2vh 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.buttonCont > button {
+
+  background: rgb(30, 132, 124);
+  color: #fff;
+  font-weight: 200;
+  font-size: 15px;
+  border-radius: 20px;
+  
+  text-transform: uppercase;
+  padding: 12px;
+  transition: all 0.2s ease-in-out;
+  border: 0px;
+}
+
+
+.buttonCont > button:hover {
+  background: #333 !important;
+  cursor: pointer !important;
+  color: #fff !important;
+
+
+}
+
+
   
  .lonerButton {
   background: rgb(21, 149, 77);
@@ -156,7 +194,7 @@
   transition: all 0.2s ease-in-out;
   border: 0px;
   margin: 3vh 0;
-  border-radius: 10px;
+  border-radius: 20px;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
   width: 18%;
 
@@ -237,6 +275,26 @@
     font-weight: 300;
     padding-bottom: 1vh;
   }
+
+
+  .modalCont > p {
+    font-size: 24px;
+    text-align: center;
+    font-weight: 600;
+    word-wrap: break-word;
+    width: 80%;
+    font-weight: 300;
+    padding-bottom: 1vh;
+  }
+
+
+  .modalCont > p > ul {
+    margin-left: 0.7vw;
+    list-style-type: none;
+  }
+
+
+ 
 
   .modalCont > h5 > span {
     font-weight: bold;
@@ -464,6 +522,14 @@ align-items: center;
       font-size: 13px;
 
      
+    }
+
+
+    .buttonCont > button {
+
+      font-size: 13px;
+
+
     }
 
     #buttonId {

@@ -51,7 +51,7 @@ const override: CSSProperties = {
 
 
 
-function Main({TOTAL1}) {
+function Main({ TOTAL1 }) {
 
 
     const [account, setAccount] = useState<Address>();
@@ -95,6 +95,7 @@ function Main({TOTAL1}) {
     const [dexWGas, setDexWGas] = useState<BigInt>(BigInt(0));
     const [dexStGas, setDexStGas] = useState<BigInt>(BigInt(0));
     const [showModal2, setShowModal2] = useState(false);
+    const [showModal3, setShowModal3] = useState(false);
     const [depositSuccess, setDepositSuccess] = useState(false);
     const [routeGenerated, setRouteGenerated] = useState(false);
     const [timeForEstimates, setTimeForEstimates] = useState(false);
@@ -115,6 +116,8 @@ function Main({TOTAL1}) {
 
     const [depositPeriod, setDepositPeriod] = useState<boolean>(false)
     const [total, setTotal] = useState(0)
+    const [goForEth, setGoForEth] = useState(1);
+    const [goForstEth, setGoForstEth] = useState(1);
 
 
 
@@ -124,7 +127,32 @@ function Main({TOTAL1}) {
         setTotal(TOTAL1)
 
 
-    },[TOTAL1] )
+    }, [TOTAL1])
+
+
+    useEffect(() => {
+
+
+        if(goForEth === 0) {
+             balanceCheck();
+
+        }
+
+       
+
+    }, [goForEth])
+
+    useEffect(() => {
+
+
+        if(goForstEth === 0) {
+             balanceCheckStETH();
+
+        }
+
+       
+
+    }, [goForstEth])
 
 
 
@@ -138,7 +166,7 @@ function Main({TOTAL1}) {
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
-                console.log("HANDLE ETH PRICE:" + data.USD);
+
                 // Handle the data here
 
                 setETHprice(data.USD)
@@ -219,8 +247,6 @@ function Main({TOTAL1}) {
         ])
 
 
-        console.log("Token o:" + token0)
-
         const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
             token0, token1, fee,
             fromReadableAmount(
@@ -234,7 +260,7 @@ function Main({TOTAL1}) {
         let formatted = Number(formatEther(quotedAmountOut));
         let newQuote = 1 / formatted;
 
-        console.log("quotedAmountOut" + newQuote);
+
 
         setUSDCquote(newQuote);
 
@@ -292,15 +318,17 @@ function Main({TOTAL1}) {
 
 
 
-        
+
     const retrieveCurrentGasPrice = async () => {
 
         const newPrice = await client.getGasPrice()
 
-        console.log("Format of the gasPrice" + newPrice);
+
 
 
         setGasPrice(newPrice)
+
+       
 
 
     }
@@ -329,7 +357,7 @@ function Main({TOTAL1}) {
 
     }, [gasPrice]);
 
-    
+
 
 
 
@@ -337,7 +365,7 @@ function Main({TOTAL1}) {
     useEffect(() => {
 
 
-      
+
 
 
         const timeoutId = setTimeout(getContractBalance, 6000);
@@ -350,10 +378,10 @@ function Main({TOTAL1}) {
     useEffect(() => {
 
 
-      
 
 
-       getContractBalance();
+
+        getContractBalance();
 
 
     }, [])
@@ -367,7 +395,7 @@ function Main({TOTAL1}) {
         let block = await client.getBlock();
 
 
-        console.log("This is the block:" + Object.keys(block))
+
 
 
         setBaseFee(block.baseFeePerGas);
@@ -429,26 +457,25 @@ function Main({TOTAL1}) {
         setrETHContractBalance(spesh);
 
 
-        console.log("THIS IS THE rETH you're looking for:" + spesh)
-        console.log("THIS IS THE estrETH you're looking for:" + estReth)
+
 
 
         if (spesh >= numrETH) {
 
 
-            setErrorMessage("")
+
 
 
 
 
 
         } else {
-if(depositPeriod === false) {
-            setErrorMessage("Not enough rETH in the Rocket Rebate contract. Please enter different values.")
-            setApproved(false);
-            setIsReadyToApprove(false);
-            setTimeForEstimates(false);
-}
+            if (depositPeriod === false) {
+                setErrorMessage("Not enough rETH in the Rocket Rebate contract. Please enter different values.")
+                setApproved(false);
+                setIsReadyToApprove(false);
+                setTimeForEstimates(false);
+            }
 
 
         }
@@ -479,8 +506,7 @@ if(depositPeriod === false) {
 
         const intValue = floatToBigInt(value)
 
-        console.log("typeof value for rETH" + typeof value)
-        console.log("Lets see the intValue:" + intValue)
+
 
 
 
@@ -494,9 +520,7 @@ if(depositPeriod === false) {
         })
 
 
-        console.log("ETH amount FROM rETH savings:" + ETHAmount);
 
-        console.log(typeof ETHAmount);
 
 
 
@@ -518,11 +542,7 @@ if(depositPeriod === false) {
     }, [altrETH])
 
 
-    useEffect(() => {
 
-        console.log("rETHSavingsToETH: " + rETHSavingsToETH)
-
-    }, [rETHSavingsToETH])
 
 
 
@@ -547,6 +567,10 @@ if(depositPeriod === false) {
 
 
         let TOTAL = stETH + ETH;
+      
+
+
+
 
 
 
@@ -565,6 +589,8 @@ if(depositPeriod === false) {
 
             let finGas = result;
 
+
+            console.log(finGas);
 
 
             setGas(finGas);
@@ -586,15 +612,12 @@ if(depositPeriod === false) {
 
             let finrETH = bigIntToString(rETHAmount)
 
-            console.log("rETH for equation:" + rETHAmount)
-
-            console.log(finrETH);
 
 
             let formatrETH = wei(finrETH);
 
 
-            console.log("fORMAT rETH:" + formatrETH);
+
 
 
             let rETHwithFee = Number(formatEther(rETHAmount));
@@ -603,12 +626,27 @@ if(depositPeriod === false) {
             let defray = (1000000 * Number(formatEther(baseFee)) * (Number(formatEther(ETH)) + Number(formatEther(stETH)))) / wei(32);
 
 
-            console.log("This is Andy defray:" + defray);
+
 
 
             let actualReth = wei(Number(rETHAmount) - defray);
 
             setEstReth(actualReth.toString());
+
+         if(   balanceBoolstETH && validBoolstETH) {
+
+            setErrorMessage("")
+
+
+
+         }
+           
+               
+
+
+            
+
+
 
         } catch (e) {
 
@@ -617,7 +655,7 @@ if(depositPeriod === false) {
             setTimeForEstimates(false);
             setIsReadyToApprove(false);
 
-            if (depositPeriod === false ) {
+            if (depositPeriod === false || !balanceBoolETH || !balanceBoolstETH) {
                 setErrorMessage("This deposit will revert. Try a smaller amount(s) to match the rETH balance of the Rocket Rebate contract.")
             }
 
@@ -641,7 +679,7 @@ if(depositPeriod === false) {
         if (account && client) {
             getrETHBalance();
             balanceCheck();
-            console.log("And it all starts here!")
+
             balanceCheckStETH();
         }
     }, [account])
@@ -690,7 +728,7 @@ if(depositPeriod === false) {
                 estimateGas();
                 setApproved(true)
 
-                console.log("the culprit is allowance check if...");
+
 
 
 
@@ -709,7 +747,7 @@ if(depositPeriod === false) {
                 } else {
 
                     estimateGas();
-                    console.log("the culprit is allowance Check else");
+
 
                 }
             }
@@ -790,8 +828,6 @@ if(depositPeriod === false) {
         }
 
 
-        console.log(ETH);
-        console.log(typeof ETH)
 
 
 
@@ -842,8 +878,6 @@ if(depositPeriod === false) {
         }
 
 
-        console.log(ETH);
-        console.log(typeof ETH)
 
 
 
@@ -911,8 +945,7 @@ if(depositPeriod === false) {
             args: [stETH]
         })
 
-        console.log(typeof wstETHAmount);
-        console.log(wstETHAmount);
+
 
         route = await router.route(
             CurrencyAmount.fromRawAmount(
@@ -1097,7 +1130,7 @@ if(depositPeriod === false) {
 
 
                     setUSD(wei(hexToNumber(newUSD)));
-                    console.log(USD)
+
 
                 } catch (e) {
                     console.log(e)
@@ -1318,7 +1351,7 @@ if(depositPeriod === false) {
                 const receipt = await client.waitForTransactionReceipt({ hash: approvalHash })
                 setApprovalReceipt(receipt)
 
-                console.log(receipt)
+
 
 
                 if (receipt.status === "success") {
@@ -1329,7 +1362,7 @@ if(depositPeriod === false) {
 
                     allowanceCheck();
                     setErrorMessage2("")
-                    setErrorMessage("")
+
                     setLoading(false);
 
 
@@ -1337,7 +1370,7 @@ if(depositPeriod === false) {
                 } else {
 
                     setErrorMessage2("")
-                    setErrorMessage("")
+
                     setLoading(false);
                 }
 
@@ -1452,15 +1485,6 @@ if(depositPeriod === false) {
     }
 
 
-    //CHECKER FOR RETHTOETH
-
-
-    useEffect(() => {
-
-        console.log(rETHSavingsToETH)
-        console.log(typeof rETHSavingsToETH)
-
-    }, [rETHSavingsToETH])
 
 
 
@@ -1482,6 +1506,8 @@ if(depositPeriod === false) {
 
 
         if (ETH <= balance && ETH > 0 && !isReadyToApprove) {
+
+            console.log("You got here.")
 
 
             setApproved(true)
@@ -1627,11 +1653,7 @@ if(depositPeriod === false) {
     }
 
 
-    useEffect(() => {
 
-        console.log("This is the receipt" + receipt)
-
-    }, [receipt])
 
 
 
@@ -1670,7 +1692,7 @@ if(depositPeriod === false) {
 
 
 
-                    console.log("Object keys for gasUsed:" + receipt.blockNumber)
+
 
 
 
@@ -1679,7 +1701,7 @@ if(depositPeriod === false) {
 
 
 
-                    console.log(JSON)
+
 
 
                     for (const log of receipt.logs) {
@@ -1690,7 +1712,7 @@ if(depositPeriod === false) {
                                 topics: log.topics
                             })
 
-                            console.log("THIS IS THE TOPIC:" + eventName + args)
+
                             setEstReth(formatEther(args[2]))
                         } else {
 
@@ -1719,7 +1741,7 @@ if(depositPeriod === false) {
                     balanceCheck();
                     balanceCheckStETH();
                     getContractBalance();
-                    
+
                     setErrorMessage2("")
                     setErrorMessage("")
 
@@ -1754,11 +1776,11 @@ if(depositPeriod === false) {
 
             setWallet(newWallet);
 
-            console.log(newWallet);
+
 
             const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' })
 
-            console.log("This is the address" + address)
+
 
             setAccount(address)
 
@@ -1840,6 +1862,10 @@ if(depositPeriod === false) {
 
 
     useEffect(() => {
+        balanceCheckStETH();
+
+
+        setErrorMessage2("")
 
 
 
@@ -1868,6 +1894,8 @@ if(depositPeriod === false) {
     const handleEth = async (newETH) => {
         setETHstring(newETH);
 
+        setGoForstEth(1)
+
 
 
         if (newETH === "") {
@@ -1877,7 +1905,7 @@ if(depositPeriod === false) {
             setETH(BigInt(0))
             setApproved(false)
             setBalanceBoolETH(true);
-            balanceCheckStETH();
+            setGoForstEth(0)
             setValidBoolETH(true);
 
 
@@ -1917,8 +1945,12 @@ if(depositPeriod === false) {
                             setValidBoolETH(true);
 
 
+                            if (!balanceBoolstETH) {
 
-                            setErrorMessage2("");
+                                setErrorMessage("You have not input a valid number")
+
+                            }
+
 
                             if (!validBoolstETH) {
 
@@ -2009,9 +2041,10 @@ if(depositPeriod === false) {
 
     useEffect(() => {
 
+console.log("HERE WE GO!!!")
 
-
-
+        balanceCheck();
+        setErrorMessage("")
 
 
 
@@ -2038,11 +2071,11 @@ if(depositPeriod === false) {
             if (ETHChecked || ETH !== BigInt(0)) {
 
                 console.log("Working")
-                console.log(ETHChecked)
+
 
             } else {
                 setTimeForEstimates(false)
-                console.log("Not Working")
+
             }
 
 
@@ -2090,31 +2123,38 @@ if(depositPeriod === false) {
     const handleStETH = async (newStETH: string) => {
         setStETHstring(newStETH);
         let stEthCheck;
+        setErrorMessage("")
+
+        setGoForEth(1);
+        console.log(newStETH);
+        console.log(typeof newStETH);
+
+        
+
 
         setApproved(false)
-        if (newStETH === "" && ETHChecked) {
+        if (newStETH === "") {
 
             setErrorMessage("");
             setStETHChecked(false);
             setStETH(BigInt(0))
             setBalanceBoolstETH(true);
-            balanceCheck();
+            console.log("is ETH checked" + ETHChecked);
+            console.log("is ready to Approve" + isReadyToApprove);
+
+
+            setGoForEth(0);
+           
+
+
             setIsReadyToApprove(false)
             setValidBoolstETH(true);
+            console.log("newStEth running if" + newStETH);
+
+
+
         }
-
-        else if (newStETH === "" && ETHChecked === false) {
-
-            setErrorMessage("");
-            setStETHChecked(false);
-            setStETH(BigInt(0))
-            setApproved(false)
-            setBalanceBoolstETH(true);
-            setIsReadyToApprove(false)
-            setValidBoolstETH(true);
-
-
-        } else {
+        else {
 
 
 
@@ -2153,7 +2193,12 @@ if(depositPeriod === false) {
 
 
 
-                            setErrorMessage("");
+                            if (!balanceBoolETH) {
+
+                                setErrorMessage2("You have not input a valid number")
+
+                            }
+
 
 
                             if (!validBoolETH) {
@@ -2232,6 +2277,16 @@ if(depositPeriod === false) {
     }
 
 
+    const handleRead = async () => {
+
+        setShowModal3(true);
+
+
+
+    }
+
+
+
 
     useEffect(() => {
 
@@ -2252,7 +2307,7 @@ if(depositPeriod === false) {
 
 
 
-    
+
 
 
 
@@ -2274,10 +2329,15 @@ if(depositPeriod === false) {
         <div className={classes.container}>
 
 
-            <div className={classes.box1}>
+            <div className={classes.box1} style={total === 0 ? { display: "none" } : { display: "flex" }}>
 
                 <h5>Contract Balance:<span> {roundToFiveDecimalPlaces(rETHContractBalance)}</span> rETH</h5>
                 <h5>Over <span>${roundToTwoDecimalPlaces(TOTAL1)}</span> saved so far</h5>
+            </div>
+
+            <div className={classes.buttonCont}>
+                <button onClick={handleRead}>Read Me</button>
+
             </div>
             <div className={classes.wrapper}>
                 <div className={classes.box}>
@@ -2340,7 +2400,7 @@ if(depositPeriod === false) {
 
 
 
-             {/*       <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
+                    {/*       <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
                     <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
 
 
@@ -2732,7 +2792,7 @@ if(depositPeriod === false) {
                             (dexGas !== BigInt(0)) && (
                                 <>
                                     <>
-                                        <h5><span>Gas on Dex:</span> {roundToFiveDecimalPlaces(formatEther(dexGas * gasPrice))}</h5>
+                                        <h5><span>Transaction cost on Dex:</span> {roundToFiveDecimalPlaces(formatEther(dexGas * gasPrice))}</h5>
                                     </>
 
 
@@ -2845,6 +2905,88 @@ if(depositPeriod === false) {
 
 
                         }
+
+                    </div>
+
+                </Modal>
+            )}
+
+
+            {showModal3 && (
+                <Modal
+                    isOpen={showModal3}
+                    onRequestClose={() => setShowModal3(false)}
+                    contentLabel="Delete User Modal"
+                    className={classes.speshModal}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        },
+                        content: {
+                            alignSelf: 'center',
+                            margin: '5px',
+                            fontFamily: '"Roboto", sans-serif',
+                            maxWidth: '90%',
+                            width: '80%',
+                            maxHeight: '600px',
+                            padding: "3.5vh 0",
+                            zIndex: "999",
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            overflowY: "scroll",
+                            color: '#222',
+                            backgroundColor: '#faf9f6',
+                            border: '0',
+                            borderRadius: '20px',
+                            boxShadow: '0px 5px 10px rgba(0, 0, 0, 0.25)',
+
+                            gap: "2"
+                        },
+                    }}
+
+
+
+                >
+
+                    <AiOutlineClose onClick={() => {
+                        setShowModal3(false);
+
+                    }} className={classes.removeIcon} />
+                    <div className={classes.modalCont}>
+
+
+
+                        <p><i>Rocket Rebate</i>  <br /> <br />is a simplified and gas-minimized way to convert Ether (ETH) and/or Lido staked ETH (stETH) to Rocket Pool staked ETH (rETH). This is meant to help smaller stakers to keep more of their principle, to decrease the possibility of stETH dust being trapped in a wallet (still contributing to staking centralization), and to allow stakers more flexibility for dollar cost averaging or more frequent staking than would be possible using a decentralized exchange. After multiple exchange transactions, the contract can disburse stETH and ETH to batch a single stETH burn and a single rETH mint, which offers significant gas savings compared to individual mint/burns.</p>
+
+                        <p><strong>How much can you convert?</strong> <br /> <br />This contract is meant for small amounts. The converted amount must be less than 1.0 ETH/stETH or an equivalent combination. The amount received must also be less than the rETH remaining in the contract.</p>
+
+                        <p><strong>How is the rebate calculated?</strong>  <br /> <br /> Your "estimated savings" is based on comparison to real-time simulated transactions on Uniswap DEX, and includes the difference in rETH value received. The historical rebate estimates are based on minimum gas amounts, so generally underestimate the amount saved.</p>
+
+                        <p><strong>What are the benefits for you?</strong>  <br /> <br />
+                            <ul>
+                                <li> - Lower gas fees (33-66% transaction cost reduction, depending on your DEX/contract/token)</li>
+                                <li> - Slightly more rETH returned: Since rETH often trades at a small premium, and stETH often trades at a small discount, this method will often get you more rETH than buying in a DEX. Additionally, there is no slippage.</li>
+                            </ul>
+                        </p>
+
+                        <p><strong>What are potential downsides?</strong>   <br /> <br /> The contract needs to be manually filled, so it may be empty at times, particularly when new rETH is unable to be minted.</p>
+
+                        <p><strong>What are the benefits for Ethereum?</strong>  <br /> <br />
+                            <ul>
+                                <li> - More stETH burned to help decentralize staking</li>
+                                <li> - More rETH created to help decentralize staking</li>
+                                <li> - Less ETH goes to arbitrage bots</li>
+                            </ul>
+                        </p>
+
+
+
+
 
                     </div>
 
