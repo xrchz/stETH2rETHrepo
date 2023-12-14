@@ -1,0 +1,9 @@
+{
+  "name": "logserve",
+  "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "ethers": "6",
+    "dotenv": "16"
+  }
+}
