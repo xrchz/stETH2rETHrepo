@@ -51,13 +51,34 @@ while (block < currentBlockNumber) {
   block = max
 }
 
-rocketRebate.addListener('Deposit', processLog)
+console.log(`${timestamp()} Sorting ${savedLogs.length} logs`)
+savedLogs.sort((a,b) => a.timestamp - b.timestamp)
+
+console.log(`${timestamp()} Computing JSON`)
+let savedJson = JSON.stringify(savedLogs)
+
+async function processNewLog(log) {
+  await processLog(log)
+  console.log(`${timestamp()} Recomputing JSON`)
+  savedJson = JSON.stringify(savedLogs)
+}
+
+rocketRebate.addListener('Deposit', processNewLog)
 
 const server = http.createServer((req, res) => {
-  console.log(`${timestamp()} Serving request`)
+  console.log(`${timestamp()} Serving request from ${req.headers['origin']}`)
+  const ETag = `"${savedLogs.length}"`
   res.setHeader('Content-Type', 'application/json')
   res.setHeader('Access-Control-Allow-Origin', 'https://rocketrebate.io')
-  res.end(JSON.stringify(savedLogs))
+  res.setHeader('ETag', ETag)
+  const ifNoneMatch = req.headers['if-none-match']
+  if (ifNoneMatch === ETag) {
+    console.log(`${timestamp()} ETag ${ETag} unchanged: responding 304`)
+    res.statusCode = 304
+    res.end()
+  }
+  else
+    res.end(savedJson)
 })
 
 server.on('listening', () => fs.chmodSync(process.env.SOCKET, 0o777))
