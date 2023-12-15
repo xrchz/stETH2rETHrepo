@@ -51,13 +51,26 @@ while (block < currentBlockNumber) {
   block = max
 }
 
-rocketRebate.addListener('Deposit', processLog)
+console.log(`${timestamp()} Sorting ${savedLogs.length} logs`)
+savedLogs.sort((a,b) => a.timestamp - b.timestamp)
+
+console.log(`${timestamp()} Computing JSON`)
+let savedJson = JSON.stringify(savedLogs)
+
+async function processNewLog(log) {
+  await processLog(log)
+  console.log(`${timestamp()} Recomputing JSON`)
+  savedJson = JSON.stringify(savedLogs)
+}
+
+rocketRebate.addListener('Deposit', processNewLog)
 
 const server = http.createServer((req, res) => {
   console.log(`${timestamp()} Serving request`)
   res.setHeader('Content-Type', 'application/json')
   res.setHeader('Access-Control-Allow-Origin', 'https://rocketrebate.io')
-  res.end(JSON.stringify(savedLogs))
+  res.setHeader('ETag', `"${savedLogs.length}"`)
+  res.end(savedJson)
 })
 
 server.on('listening', () => fs.chmodSync(process.env.SOCKET, 0o777))
