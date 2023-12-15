@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import Modal from "react-modal";
 import { AiOutlineClose } from 'react-icons/ai'
 
-import classes from './main.module.css';
-import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, decodeEventLog, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import classes from "./main.module.css";
+
+import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, decodeEventLog, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther, TransactionReceipt } from 'viem';
 import { mainnet } from 'viem/chains';
 import "viem/window";
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
@@ -19,7 +20,7 @@ import { TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
 import { ethers } from "ethers";
-import UniAbi from "../uniTest/libs/UniAbi.json"
+import UniAbi from  "../uniTest/libs/UniAbi.json"
 import {
     AlphaRouter,
     SwapOptionsSwapRouter02,
@@ -53,12 +54,15 @@ const override: CSSProperties = {
 
 function Main({ TOTAL1 }) {
 
+    const apiKey = process.env.REACT_APP_API_KEY;
+
+   
 
     const [account, setAccount] = useState<Address>();
     const [foundryAccount, setFoundryAccount] = useState<Address>()
     const [approved, setApproved] = useState<boolean>(false);
     const [hash, setHash] = useState<string | undefined>()
-    const [receipt, setReceipt] = useState<string | undefined>();
+    const [receipt, setReceipt] = useState<TransactionReceipt>();
     const [stETHChecked, setStETHChecked] = useState<boolean>(false);
     const [stETH, setStETH] = useState<bigint>(BigInt(0));
     const [stETHstring, setStETHstring] = useState("");
@@ -66,11 +70,11 @@ function Main({ TOTAL1 }) {
     const [ETHChecked, setETHChecked] = useState<boolean>(false)
     const [ETHstring, setETHstring] = useState("");
     const [approvalHash, setApprovalHash] = useState<string | undefined>()
-    const [approvalReceipt, setApprovalReceipt] = useState<string | undefined>();
+    const [approvalReceipt, setApprovalReceipt] = useState<TransactionReceipt>();
     const [errorMessage, setErrorMessage] = useState<string | undefined>("")
     const [errorMessage2, setErrorMessage2] = useState<string | undefined>("")
-    const [gas, setGas] = useState<BigInt | undefined>(BigInt(0))
-    const [finalGas, setFinalGas] = useState<BigInt | undefined>(BigInt(0))
+    const [gas, setGas] = useState<bigint>(BigInt(0))
+    const [finalGas, setFinalGas] = useState<bigint >(BigInt(0))
 
     const [initialised, setInitialised] = useState<boolean>(false)
     const [newTransactionBool, setNewTransactionBool] = useState(false)
@@ -85,25 +89,25 @@ function Main({ TOTAL1 }) {
     const stETH2rETH = '0xfAaBbE302750635E3F918385a1aEb4A9eb45977a';
     const rETHcontract = '0xae78736Cd615f374D3085123A210448E74Fc6393';
     const stETHcontract = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
-    const [wallet, setWallet] = useState(undefined);
+    const [wallet, setWallet] = useState<any>();
     const [currentWETHRoute, setCurrentWETHRoute] = useState<SwapRoute | undefined>(undefined)
     const [currentWSTETHRoute, setCurrentWSTETHRoute] = useState<SwapRoute | undefined>(undefined)
     const [currentUSDCRoute, setCurrentUSDCRoute] = useState<SwapRoute | undefined>(undefined)
     const [USD, setUSD] = useState<number>(0)
     const [altrETH, setAltrETH] = useState(0)
-    const [dexGas, setDexGas] = useState<BigInt>(BigInt(0));
-    const [dexWGas, setDexWGas] = useState<BigInt>(BigInt(0));
-    const [dexStGas, setDexStGas] = useState<BigInt>(BigInt(0));
+    const [dexGas, setDexGas] = useState<bigint>(BigInt(0));
+    const [dexWGas, setDexWGas] = useState<bigint>(BigInt(0));
+    const [dexStGas, setDexStGas] = useState<bigint>(BigInt(0));
     const [showModal2, setShowModal2] = useState(false);
     const [showModal3, setShowModal3] = useState(false);
     const [depositSuccess, setDepositSuccess] = useState(false);
     const [routeGenerated, setRouteGenerated] = useState(false);
     const [timeForEstimates, setTimeForEstimates] = useState(false);
-    const [gasPrice, setGasPrice] = useState<BigInt | undefined>(BigInt(0))
+    const [gasPrice, setGasPrice] = useState<bigint>(BigInt(0))
     const [ETHprice, setETHprice] = useState("");
     const [rETHSavingsToETH, setrETHSavingsToETH] = useState<BigInt>()
     const [USDCquote, setUSDCquote] = useState<number>()
-    const [baseFee, setBaseFee] = useState<BigInt>(BigInt(0))
+    const [baseFee, setBaseFee] = useState<bigint>(BigInt(0))
 
 
     const [balanceBoolETH, setBalanceBoolETH] = useState<boolean>(true)
@@ -116,8 +120,8 @@ function Main({ TOTAL1 }) {
 
     const [depositPeriod, setDepositPeriod] = useState<boolean>(false)
     const [total, setTotal] = useState(0)
-    const [goForEth, setGoForEth] = useState(1);
-    const [goForstEth, setGoForstEth] = useState(1);
+    const [goForEth, setGoForEth] = useState(false);
+    const [goForstEth, setGoForstEth] = useState(false);
 
 
 
@@ -133,7 +137,7 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
 
 
-        if(goForEth === 0) {
+        if(goForEth === true) {
              balanceCheck();
 
         }
@@ -145,7 +149,7 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
 
 
-        if(goForstEth === 0) {
+        if(goForstEth === true) {
              balanceCheckStETH();
 
         }
@@ -222,7 +226,7 @@ function Main({ TOTAL1 }) {
         })
 
 
-        const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4")
+        const provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${apiKey}`)
         const poolContract = new ethers.Contract(
             currentPoolAddress,
             IUniswapV3PoolABI.abi,
@@ -301,7 +305,7 @@ function Main({ TOTAL1 }) {
 
 
 
-    // https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4
+   
 
 
 
@@ -309,7 +313,7 @@ function Main({ TOTAL1 }) {
 
         chain: mainnet,
 
-        transport: http('https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4')
+        transport: http(`https://mainnet.infura.io/v3/${apiKey}`)
     })
         .extend(publicActions)
         .extend(walletActions)
@@ -396,9 +400,11 @@ function Main({ TOTAL1 }) {
 
 
 
-
+if(block.baseFeePerGas !== null){
 
         setBaseFee(block.baseFeePerGas);
+
+}
 
 
 
@@ -437,7 +443,7 @@ function Main({ TOTAL1 }) {
     const getContractBalance = async () => {
 
 
-        let rETH = BigInt(0);
+        let rETH;
 
 
         rETH = await client.readContract({
@@ -450,11 +456,13 @@ function Main({ TOTAL1 }) {
 
         let spesh = wei(Number(rETH))
 
+        let speshString = spesh.toString();
+
         let numrETH = Number(estReth)
 
 
 
-        setrETHContractBalance(spesh);
+        setrETHContractBalance(speshString);
 
 
 
@@ -508,26 +516,16 @@ function Main({ TOTAL1 }) {
 
 
 
+let ETHAmount
 
 
 
-
-        let ETHAmount = await client.readContract({
+        ETHAmount = await client.readContract({
             address: rETHcontract,
             abi: rETHabi,
             functionName: 'getEthValue',
             args: [intValue]
         })
-
-
-
-
-
-
-
-
-
-
 
         setrETHSavingsToETH(ETHAmount);
 
@@ -577,6 +575,8 @@ function Main({ TOTAL1 }) {
         try {
 
 
+            if(account !== undefined) {
+
             const result = await client.estimateContractGas({
                 abi: stETH2rETHabi,
                 args: [stETH],
@@ -590,16 +590,16 @@ function Main({ TOTAL1 }) {
             let finGas = result;
 
 
-            console.log(finGas);
+       
 
 
             setGas(finGas);
 
 
+            let rETHAmount;
 
 
-
-            const rETHAmount = await client.readContract({
+             rETHAmount = await client.readContract({
                 address: rETHcontract,
                 abi: rETHabi,
                 functionName: 'getRethValue',
@@ -644,7 +644,7 @@ function Main({ TOTAL1 }) {
                
 
 
-            
+        }
 
 
 
@@ -1012,7 +1012,7 @@ function Main({ TOTAL1 }) {
     // GET wstETH UNISWAP rETH
 
     async function executeWSTETHRoute(
-        route: SwapRoute
+        route
     ) {
 
 
@@ -1064,7 +1064,7 @@ function Main({ TOTAL1 }) {
     // generate US Dollar data
 
     async function executeUSDCRoute(
-        route: SwapRoute
+        route
     ) {
 
 
@@ -1161,7 +1161,7 @@ function Main({ TOTAL1 }) {
     // GET wETH UNISWAP rETH
 
     async function executeWETHRoute(
-        route: SwapRoute
+        route
     ) {
 
 
@@ -1348,7 +1348,7 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
         ; (async () => {
             if (approvalHash) {
-                const receipt = await client.waitForTransactionReceipt({ hash: approvalHash })
+                const receipt = await client.waitForTransactionReceipt({ hash: approvalHash  as `0x${string}` })
                 setApprovalReceipt(receipt)
 
 
@@ -1362,6 +1362,7 @@ function Main({ TOTAL1 }) {
 
                     allowanceCheck();
                     setErrorMessage2("")
+                    
 
                     setLoading(false);
 
@@ -1387,7 +1388,7 @@ function Main({ TOTAL1 }) {
 
 
 
-    const handleFakestETH = async () => {
+    /*const handleFakestETH = async () => {
 
 
 
@@ -1420,7 +1421,7 @@ function Main({ TOTAL1 }) {
 
 
 
-    }
+    } */
 
     const sendTransaction = async () => {
 
@@ -1496,7 +1497,7 @@ function Main({ TOTAL1 }) {
 
 
         const balance = await client.getBalance({
-            address: account,
+            address: account  as `0x${string}`,
 
         })
 
@@ -1507,7 +1508,7 @@ function Main({ TOTAL1 }) {
 
         if (ETH <= balance && ETH > 0 && !isReadyToApprove) {
 
-            console.log("You got here.")
+           
 
 
             setApproved(true)
@@ -1515,6 +1516,7 @@ function Main({ TOTAL1 }) {
 
             estimateGas();
             setBalanceBoolETH(true)
+            
 
 
 
@@ -1561,10 +1563,10 @@ function Main({ TOTAL1 }) {
 
 
 
+let rETHAmount
 
 
-
-        const rETHAmount = await client.readContract({
+       rETHAmount = await client.readContract({
             address: rETHcontract,
             abi: rETHabi,
             functionName: 'balanceOf',
@@ -1613,10 +1615,12 @@ function Main({ TOTAL1 }) {
 
 
 
-
+if(wallet !== undefined) {
 
             setErrorMessage("");
-            setErrorMessage2("")
+            setErrorMessage2("");
+
+        
 
             const result = await wallet.writeContract(
                 {
@@ -1630,6 +1634,8 @@ function Main({ TOTAL1 }) {
                 }
             )
             setHash(result)
+
+}
 
 
 
@@ -1675,7 +1681,7 @@ function Main({ TOTAL1 }) {
         ; (async () => {
             if (hash) {
 
-                const receipt = await client.waitForTransactionReceipt({ hash })
+                const receipt = await client.waitForTransactionReceipt({ hash: hash  as `0x${string}` })
                 setReceipt(receipt)
 
 
@@ -1769,7 +1775,13 @@ function Main({ TOTAL1 }) {
         try {
 
 
-            let newWallet = await createWalletClient({
+            let newWallet;
+
+
+            if(window.ethereum !== undefined) {
+
+
+            newWallet = await createWalletClient({
                 chain: mainnet,
                 transport: custom(window.ethereum)
             })
@@ -1786,6 +1798,9 @@ function Main({ TOTAL1 }) {
 
 
             setLoading(false)
+
+
+        }
 
 
 
@@ -1812,15 +1827,15 @@ function Main({ TOTAL1 }) {
 
 
         try {
-            await window.ethereum.request({
-                method: "eth_requestAccounts",
-                params: [{ eth_accounts: {} }]
-            })
+         
+
+            window.location.reload();
+            
+             
+                
 
 
-            setAccount(undefined)
-            setWallet(undefined);
-            await newTransaction();
+         
 
         } catch (e) {
 
@@ -1862,8 +1877,11 @@ function Main({ TOTAL1 }) {
 
 
     useEffect(() => {
-        balanceCheckStETH();
 
+
+        if(stETH !== BigInt(0)) {
+        balanceCheckStETH();
+        }
 
         setErrorMessage2("")
 
@@ -1894,7 +1912,7 @@ function Main({ TOTAL1 }) {
     const handleEth = async (newETH) => {
         setETHstring(newETH);
 
-        setGoForstEth(1)
+        setGoForstEth(true)
 
 
 
@@ -1905,7 +1923,7 @@ function Main({ TOTAL1 }) {
             setETH(BigInt(0))
             setApproved(false)
             setBalanceBoolETH(true);
-            setGoForstEth(0)
+            setGoForstEth(false)
             setValidBoolETH(true);
 
 
@@ -2041,7 +2059,7 @@ function Main({ TOTAL1 }) {
 
     useEffect(() => {
 
-console.log("HERE WE GO!!!")
+
 
         balanceCheck();
         setErrorMessage("")
@@ -2125,9 +2143,9 @@ console.log("HERE WE GO!!!")
         let stEthCheck;
         setErrorMessage("")
 
-        setGoForEth(1);
-        console.log(newStETH);
-        console.log(typeof newStETH);
+        setGoForEth(false);
+       
+    
 
         
 
@@ -2139,17 +2157,16 @@ console.log("HERE WE GO!!!")
             setStETHChecked(false);
             setStETH(BigInt(0))
             setBalanceBoolstETH(true);
-            console.log("is ETH checked" + ETHChecked);
-            console.log("is ready to Approve" + isReadyToApprove);
+           
 
 
-            setGoForEth(0);
+            setGoForEth(true);
            
 
 
             setIsReadyToApprove(false)
             setValidBoolstETH(true);
-            console.log("newStEth running if" + newStETH);
+            
 
 
 

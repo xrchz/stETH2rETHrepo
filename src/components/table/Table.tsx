@@ -3,6 +3,7 @@ import classes from "./table.module.css"
 import { createPublicClient, http, webSocket, decodeEventLog } from 'viem';
 import { mainnet, foundry, goerli } from 'viem/chains';
 import abi from "../../abi/stETH2rETH.json"
+
 import { ethers } from "ethers";
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 import { computePoolAddress } from '@uniswap/v3-sdk'
@@ -11,7 +12,7 @@ import {
 
 } from '../uniTest/libs/providers.ts'
 
-import { Address,  publicActions, createWalletClient,  walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import { Address, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
 import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json'
@@ -28,15 +29,19 @@ const transport = webSocket('wss://eth-mainnet.g.alchemy.com/v2/iXYPKPNVzY3OKROW
 
 const Table = ({ onDataFromChild }) => {
 
+
+  const apiKey = process.env.REACT_APP_API_KEY;
+
   const [allTransactions, setAllTransactions] = useState<Array<object>>([])
   const [rebateTotal, setRebateTotal] = useState(0)
   const [USDCquote, setUSDCquote] = useState<number>(0)
+  const [newTransactions, setNewTransactions] = useState<Array<Log>>([]);
 
 
 
   const client = createPublicClient({
     chain: mainnet,
-    transport: http('https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4')
+    transport: http(`https://mainnet.infura.io/v3/${apiKey}`)
   });
 
 
@@ -67,7 +72,7 @@ const Table = ({ onDataFromChild }) => {
 
     let newNum = Number(number)
     return parseFloat(newNum.toFixed(5));
-}
+  }
 
 
 
@@ -97,6 +102,62 @@ const Table = ({ onDataFromChild }) => {
 
 
 
+
+
+
+
+  async function getDataFromApi(apiUrl) {
+    try {
+      // Using Axios to make the request
+      const response = await fetch(apiUrl);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      // Assuming the API response is an array of objects
+      const data = await response.json();
+      console.log("This is the response:", data);
+  
+      setNewTransactions(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching data:', error.message);
+      // You can handle errors based on your requirements
+      return null;
+    }
+  }
+
+  // Example usage:
+  const apiFunction = async () => {
+
+
+    const apiUrl = 'https://xrchz.net/rrlogs/';
+    await getDataFromApi(apiUrl)
+      .then(data => {
+        if (data) {
+          console.log('Data from the API:', data);
+          // You can perform further operations with the data here
+
+          setNewTransactions(data);
+        } else {
+          console.log('No data retrieved from the API.');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+
+
+  }
+
+
+  useEffect(() => {
+    apiFunction();
+
+  }, [])
+
+
+
+
   const getQuoute = async () => {
 
 
@@ -105,46 +166,46 @@ const Table = ({ onDataFromChild }) => {
 
 
     const currentPoolAddress = computePoolAddress({
-        factoryAddress: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
-        tokenA: CurrentConfig.tokens.in,
-        tokenB: CurrentConfig.tokens.out,
-        fee: CurrentConfig.tokens.poolFee,
+      factoryAddress: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+      tokenA: CurrentConfig.tokens.in,
+      tokenB: CurrentConfig.tokens.out,
+      fee: CurrentConfig.tokens.poolFee,
     })
 
 
-    const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/713d3fd4fea04f0582ee78560e6c47e4")
+    const provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${apiKey}`)
     const poolContract = new ethers.Contract(
-        currentPoolAddress,
-        IUniswapV3PoolABI.abi,
-        provider
+      currentPoolAddress,
+      IUniswapV3PoolABI.abi,
+      provider
     )
 
 
 
     const quoterContract = new ethers.Contract(
-        '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
-        Quoter.abi,
-        getMainnetProvider()
+      '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
+      Quoter.abi,
+      getMainnetProvider()
     )
 
 
     const [token0, token1, fee, liquidity, slot0] = await Promise.all([
-        poolContract.token0(),
-        poolContract.token1(),
-        poolContract.fee(),
-        poolContract.liquidity(),
-        poolContract.slot0(),
+      poolContract.token0(),
+      poolContract.token1(),
+      poolContract.fee(),
+      poolContract.liquidity(),
+      poolContract.slot0(),
     ])
 
 
     const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
-        token0, token1, fee,
-        fromReadableAmount(
-            CurrentConfig.tokens.amountIn,
-            CurrentConfig.tokens.in.decimals
-        ).toString(),
+      token0, token1, fee,
+      fromReadableAmount(
+        CurrentConfig.tokens.amountIn,
+        CurrentConfig.tokens.in.decimals
+      ).toString(),
 
-        0
+      0
     )
 
     let formatted = Number(formatEther(quotedAmountOut));
@@ -155,165 +216,180 @@ const Table = ({ onDataFromChild }) => {
     setUSDCquote(newQuote);
 
 
-}
-
-
-useEffect(() => {
-
-
-  getQuoute();
-
-
-
-}, [])
-
-
-
-
-
-
-
-
-function getLastFiftyElements(arr) {
-  // If the array has 50 or fewer elements, return the whole array
-  if (arr.length <= 50) {
-    return arr;
   }
 
-  // If the array has more than 50 elements, return the last 50 elements
-  return arr.slice(arr.length - 50);
-}
+
+  useEffect(() => {
+
+
+    getQuoute();
 
 
 
-useEffect(() => {
-
-if(USDCquote !== 0) {
-  getEvents();
-}
-}, [USDCquote]);
+  }, [])
 
 
-const getRebates = async (arr: Array<object>) => {
-
-  let newArr: Array<object> = [];
-
-  for (let log of arr) {
-    try {
-      const transaction = await client.getTransactionReceipt({
-        hash: log.transactionHash
-      });
-
-
-      
-      const block = await client.getBlock({
-        blockHash: log.blockHash,
-        includeTransactions: true
-      })
-
-      log["effectiveGasPrice"] = transaction.effectiveGasPrice;
-      log["gasUsed"] = transaction.gasUsed;
-      log["timestamp"] = block.timestamp
-
-
-      if(log["eventName"] !== "Drain") {
-
-      newArr.push(log)
-
-
-      }
-
-    } catch (e) {
-
-
-      console.log(e)
-
-
-      
+  interface Log {
+    txHash: string
+    eventName: string
+    gasUsed: bigint
+    gasPrice: bigint
+    timestamp: string
 
    
-
+    args: {
+      ETH: bigint
+      stETH: bigint
+      rETH: bigint
     }
-
-
-  
-
-
-
+    
   }
 
 
-  console.log("loop finished")
 
-  return newArr;
 
-};
+
+  function getLastFiftyElements(arr) {
+    // If the array has 50 or fewer elements, return the whole array
+    if (arr.length <= 50) {
+      return arr;
+    }
+
+    // If the array has more than 50 elements, return the last 50 elements
+    return arr.slice(arr.length - 50);
+  }
+
+
+
+  useEffect(() => {
+
+    if (USDCquote !== 0) {
+      getEvents();
+    }
+  }, [USDCquote]);
+
+
+  /*
+  const getRebates = async (arr: Array<object>) => {
+  
+    let newArr: Array<object> = [];
+  
+    for (let log of arr) {
+      try {
+        const transaction = await client.getTransactionReceipt({
+          hash: log.transactionHash
+        });
+  
+  
+        
+        const block = await client.getBlock({
+          blockHash: log.blockHash,
+          includeTransactions: true
+        })
+  
+        log["effectiveGasPrice"] = transaction.effectiveGasPrice;
+        log["gasUsed"] = transaction.gasUsed;
+        log["timestamp"] = block.timestamp
+  
+  
+        if(log["eventName"] !== "Drain") {
+  
+        newArr.push(log)
+  
+  
+        }
+  
+      } catch (e) {
+  
+  
+        console.log(e)
+  
+  
+        
+  
+     
+  
+      }
+  
+  
+    
+  
+  
+  
+    }
+  
+  
+    console.log("loop finished")
+  
+    return newArr;
+  
+  };*/
 
 
 
   const getEvents = async () => {
- 
 
-      const logs = await client.getContractEvents({
-        address: '0xfAaBbE302750635E3F918385a1aEb4A9eb45977a',
+
+    /*const logs = await client.getContractEvents({
+      address: '0xfAaBbE302750635E3F918385a1aEb4A9eb45977a',
+      abi: abi,
+      fromBlock: 18198548n
+
+    });
+
+    const processedLogs = convertBigIntToJSON(logs);
+    const decodedLogs = [];
+
+
+    console.log("FIRST PART DONE")
+
+    processedLogs.forEach(element => {
+      const topics = decodeEventLog({
         abi: abi,
-        fromBlock: 18198548n
+        data: element.data,
+        topics: [...element.topics]
+      })
 
-      });
-
-      const processedLogs = convertBigIntToJSON(logs);
-      const decodedLogs = [];
+    });
+*/
 
 
-      console.log("FIRST PART DONE")
-
-      processedLogs.forEach(element => {
-        const topics = decodeEventLog({
-          abi: abi,
-          data: element.data,
-          topics: [...element.topics]
-        })
-
-      });
+    let newLogs = newTransactions;
 
 
 
-      let newLogs = await getRebates(processedLogs);
-      let newJSON = convertBigIntToJSON(newLogs);
 
 
-      console.log( newJSON)
+    let total = 0;
 
-      let total = 0;
-
-      for (const log of newJSON) {
+    for (const log of newTransactions) {
 
 
-       if(log["args"][3] !== "0") {
+      if (log["args"]["stETH"] !== "0") {
 
         console.log(log.gasUsed)
 
-        let newNum = wei((230000 * log.effectiveGasPrice) - (log.gasUsed * log.effectiveGasPrice)) * USDCquote;
+        let newNum = wei((230000 * log.gasPrice) - (log.gasUsed * log.gasPrice)) * USDCquote;
         total = total + newNum;
 
-       } else {
+      } else {
 
-        let newNum = wei((117000 * log.effectiveGasPrice) - (log.gasUsed * log.effectiveGasPrice)) * USDCquote;
+        let newNum = wei((117000 * log.gasPrice) - (log.gasUsed * log.gasPrice)) * USDCquote;
         total = total + newNum;
-
-       }
 
       }
 
+    }
 
-      console.log(total);
 
-      console.log("SECOND BIT DONE");
+    console.log(total);
 
-      console.log(newJSON)
+    console.log("SECOND BIT DONE");
 
-      setAllTransactions(getLastFiftyElements(newLogs.reverse()));
-      setRebateTotal(total);
+
+
+    setAllTransactions(getLastFiftyElements(newLogs.reverse()));
+    setRebateTotal(total);
   }
 
 
@@ -354,61 +430,61 @@ const getRebates = async (arr: Array<object>) => {
   return (
     <table className={classes.container}>
 
-<thead>
-      <tr>
+      <thead>
+        <tr>
 
-        <th>Event Type</th>
-
-
-        <th>Ethereum (Deposit)</th>
-        <th>stETH (Deposit)</th>
-        <th>rETH (Returned)</th>
-        <th>Estimated Rebate</th>
-        <th>Transaction Cost</th>
-        
-        <th>Date:</th>
-        <th>Transaction Hash</th>
+          <th>Event Type</th>
 
 
-      </tr>
-      </thead>
-      <tbody>
-      {allTransactions?.map((trans, index) => (
+          <th>Ethereum (Deposit)</th>
+          <th>stETH (Deposit)</th>
+          <th>rETH (Returned)</th>
+          <th>Estimated Rebate</th>
+          <th>Transaction Cost</th>
 
-
-        <tr key={"row" + index}  >
-
-
-          <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id={classes.eventName}>{trans.eventName}</td>
-
-
-
-
-          <td>{roundToFiveDecimalPlaces(wei(trans.args[1]))}</td>
-          <td>{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args[3])) : "N/A"}</td>
-          <td >{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args[2])) : "N/A"}</td>
-
-
-          {  trans.args[3] !== "0"?
-          (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((230000 * trans.effectiveGasPrice) - (trans.gasUsed * trans.effectiveGasPrice))) * USDCquote)} </td>):
-          (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((117000 * trans.effectiveGasPrice) - (trans.gasUsed * trans.effectiveGasPrice))) * USDCquote)} </td>)
-          }
-         
-          <td>{roundToFiveDecimalPlaces(wei(trans.effectiveGasPrice * trans.gasUsed))}</td>
-          
-          <td>{convertTimestampToDate(trans.timestamp)}</td>
-
-          <td>
-
-            {trans.transactionHash}
-          </td>
+          <th>Date:</th>
+          <th>Transaction Hash</th>
 
 
         </tr>
+      </thead>
+      <tbody>
+        {allTransactions?.map((trans, index) => (
 
-       
-      ))}
-       </tbody>
+
+          <tr key={"row" + index}  >
+
+
+            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id={classes.eventName}>{trans.eventName}</td>
+
+
+
+
+            <td>{roundToFiveDecimalPlaces(wei(trans.args["ETH"]))}</td>
+            <td>{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["stETH"])) : "N/A"}</td>
+            <td >{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["rETH"])) : "N/A"}</td>
+
+
+            {trans.args["stETH"] !== "0" ?
+              (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((230000 * trans.gasPrice) - (trans.gasUsed * trans.gasPrice))) * USDCquote)} </td>) :
+              (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((117000 * trans.gasPrice) - (trans.gasUsed * trans.gasPrice))) * USDCquote)} </td>)
+            }
+
+            <td>{roundToFiveDecimalPlaces(wei(trans.gasPrice * trans.gasUsed))}</td>
+
+            <td>{convertTimestampToDate(trans.timestamp)}</td>
+
+            <td>
+
+              {trans.txHash}
+            </td>
+
+
+          </tr>
+
+
+        ))}
+      </tbody>
     </table>
   )
 }
