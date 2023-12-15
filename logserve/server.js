@@ -66,11 +66,19 @@ async function processNewLog(log) {
 rocketRebate.addListener('Deposit', processNewLog)
 
 const server = http.createServer((req, res) => {
-  console.log(`${timestamp()} Serving request`)
+  console.log(`${timestamp()} Serving request from ${req.headers['origin']}`)
+  const ETag = `"${savedLogs.length}"`
   res.setHeader('Content-Type', 'application/json')
   res.setHeader('Access-Control-Allow-Origin', 'https://rocketrebate.io')
-  res.setHeader('ETag', `"${savedLogs.length}"`)
-  res.end(savedJson)
+  res.setHeader('ETag', ETag)
+  const ifNoneMatch = req.headers['if-none-match']
+  if (ifNoneMatch === ETag) {
+    console.log(`${timestamp()} ETag ${ETag} unchanged: responding 304`)
+    res.statusCode = 304
+    res.end()
+  }
+  else
+    res.end(savedJson)
 })
 
 server.on('listening', () => fs.chmodSync(process.env.SOCKET, 0o777))
