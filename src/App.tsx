@@ -1,7 +1,7 @@
 
 import React, {useState} from "react";
 import { CSSProperties } from "react";
-import classes from './app.module.css';
+import'./app.css';
 import Table from './components/table/Table.tsx';
 import Title from './components/title/Title.jsx';
 import ContractTag from './components/contractTag/ContractTag.jsx';
@@ -49,7 +49,7 @@ function App() {
   return (
    
     
-    <div className={classes.app}>
+    <div className="app">
 
 
       <Title />
@@ -85,7 +85,7 @@ function App() {
 
 
 
-      <div style={dataFromChild === 0? {display: "none"}: {display: "flex"}} className={classes.tableCont}>
+      <div style={dataFromChild === 0? {display: "none"}: {display: "flex"}} className="tableCont">
        
         <Table  onDataFromChild={handleDataFromChild} />
 

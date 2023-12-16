@@ -3,7 +3,7 @@ import React, { useState, useEffect} from "react";
 import Modal from "react-modal";
 import { AiOutlineClose } from 'react-icons/ai'
 
-import classes from "./main.module.css";
+import "./main.css";
 
 import { Address, createPublicClient, hexToNumber, http, publicActions, createWalletClient, decodeEventLog, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther, TransactionReceipt } from 'viem';
 import { mainnet } from 'viem/chains';
@@ -2343,28 +2343,28 @@ if(wallet !== undefined) {
 
 
 
-        <div className={classes.container}>
+        <div className="container">
 
 
-            <div className={classes.box1} style={total === 0 ? { display: "none" } : { display: "flex" }}>
+            <div className="box1" style={total === 0 ? { display: "none" } : { display: "flex" }}>
 
                 <h5>Contract Balance:<span> {roundToFiveDecimalPlaces(rETHContractBalance)}</span> rETH</h5>
                 <h5>Over <span>${roundToTwoDecimalPlaces(TOTAL1)}</span> saved so far</h5>
             </div>
 
-            <div className={classes.buttonCont}>
+            <div className="buttonCont">
                 <button onClick={handleRead}>Read Me</button>
 
             </div>
-            <div className={classes.wrapper}>
-                <div className={classes.box}>
+            <div className="wrapper">
+                <div className="box">
                     <h3>Connect to your Wallet</h3>
 
 
                     {(account) &&
                         (
                             <>
-                                <h5 className={classes.specialH5}><span>Connected:</span> {account}</h5>
+                                <h5 className="specialH5"><span>Connected:</span> {account}</h5>
 
                             </>
                         )
@@ -2380,7 +2380,7 @@ if(wallet !== undefined) {
 
 
 
-                        <fieldset className={classes.balances} >
+                        <fieldset className="balances" >
                             <legend>Wallet Balances:</legend>
                             < >
                                 <h5><span>rETH:</span> {roundToFiveDecimalPlaces(rETHBalance)}</h5>
@@ -2409,7 +2409,7 @@ if(wallet !== undefined) {
                         )
 
                     }
-                    {account && <button className={classes.disconnect} onClick={disconnect}>Disconnect Wallet</button>}
+                    {account && <button className="disconnect" onClick={disconnect}>Disconnect Wallet</button>}
 
 
 
@@ -2427,7 +2427,7 @@ if(wallet !== undefined) {
 
 
                 </div>
-                <div className={classes.box}>
+                <div className="box">
 
                     <h3>Trade your ETH and/or stETH</h3>
 
@@ -2472,7 +2472,7 @@ if(wallet !== undefined) {
 
                     {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
 
-                        <button id={classes.buttonId} onClick={Deposit}>Deposit</button>
+                        <button id="buttonId" onClick={Deposit}>Deposit</button>
 
                     }
 
@@ -2488,7 +2488,7 @@ if(wallet !== undefined) {
                     }
 
 
-                    <div className={classes.error2}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
+                    <div className="error2"><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
 
 
 
@@ -2499,7 +2499,7 @@ if(wallet !== undefined) {
 
 
                 </div>
-                <div className={classes.box}>
+                <div className="box">
 
                     <h3>{depositSuccess ? ("Final receipt") : ("Estimated fees/rETH ")}</h3>
 
@@ -2573,19 +2573,19 @@ if(wallet !== undefined) {
                                 (altrETH !== 0 && dexGas !== BigInt(0)) && (
                                     <>
                                         <>
-                                            <h5 className={classes.rebateH5}>
+                                            <h5 className="rebateH5">
 
                                                 {depositSuccess ? ("You saved") : ("You will save")}   {
 
                                                     Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
-                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                        (<span className="speshSpan2" style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                        : (<span className="speshSpan" style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
                                                 } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 
 
                                                     Number(estReth) - altrETH >= 0 ?
-                                                        (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
-                                                        : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                        (<span className="speshSpan" style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                        : (<span className="speshSpan" style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
 
 
                                                 } extra rETH.   </h5>
@@ -2593,7 +2593,7 @@ if(wallet !== undefined) {
                                         <>
 
 
-                                            <h5 className={classes.rebateH5}><span> {depositSuccess ? ("Your total rebate is ") : ("Your total rebate will be ")}  {
+                                            <h5 className="rebateH5"><span> {depositSuccess ? ("Your total rebate is ") : ("Your total rebate will be ")}  {
 
 
 
@@ -2601,7 +2601,7 @@ if(wallet !== undefined) {
 
 
                                                 (wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote) >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>${
+                                                    (<span className="speshSpan" style={{ color: "green" }}>${
 
 
                                                         Number(estReth) >= altrETH ? (
@@ -2618,7 +2618,7 @@ if(wallet !== undefined) {
 
                                                     }
                                                     </span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>${
+                                                    : (<span className="speshSpan" style={{ color: "red" }}>${
 
 
                                                         Number(estReth) >= altrETH ? (
@@ -2734,7 +2734,7 @@ if(wallet !== undefined) {
                     isOpen={showModal2}
                     onRequestClose={() => setShowModal2(false)}
                     contentLabel="Delete User Modal"
-                    className={classes.speshModal}
+                    className="speshModal"
                     style={{
                         overlay: {
                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -2777,8 +2777,8 @@ if(wallet !== undefined) {
                         setAltrETH(0)
                         setDexWGas(BigInt(0))
                         setDexStGas(BigInt(0))
-                    }} className={classes.removeIcon} />
-                    <div className={classes.modalCont}>
+                    }} className="removeIcon" />
+                    <div className="modalCont">
 
 
 
@@ -2830,14 +2830,14 @@ if(wallet !== undefined) {
                                             {depositSuccess ? ("You saved") : ("You will save")}   {
 
                                                 Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                    (<span className="speshSpan" style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                    : (<span className="speshSpan" style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
                                             } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 
 
                                                 Number(estReth) - altrETH >= 0 ?
-                                                    (<span className={classes.speshSpan} style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
-                                                    : (<span className={classes.speshSpan} style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                    (<span className="speshSpan" style={{ color: "green" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
+                                                    : (<span className="speshSpan" style={{ color: "red" }}>{roundToFiveDecimalPlaces(Number(estReth) - altrETH)}</span>)
 
 
                                             } extra rETH.   </h5>
@@ -2853,7 +2853,7 @@ if(wallet !== undefined) {
 
 
                                             (wei(Number(rETHSavingsToETH)) + wei(Number(dexGas * gasPrice) - Number(gas * gasPrice))) * Number(USDCquote) >= 0 ?
-                                                (<span className={classes.speshSpan} style={{ color: "green" }}>${
+                                                (<span className="speshSpan" style={{ color: "green" }}>${
 
 
                                                     Number(estReth) >= altrETH ? (
@@ -2873,7 +2873,7 @@ if(wallet !== undefined) {
 
                                                 }
                                                 </span>)
-                                                : (<span className={classes.speshSpan} style={{ color: "red" }}>${
+                                                : (<span className="speshSpan" style={{ color: "red" }}>${
 
 
                                                     Number(estReth) >= altrETH ? (
@@ -2934,7 +2934,7 @@ if(wallet !== undefined) {
                     isOpen={showModal3}
                     onRequestClose={() => setShowModal3(false)}
                     contentLabel="Delete User Modal"
-                    className={classes.speshModal}
+                    className="speshModal"
                     style={{
                         overlay: {
                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -2973,8 +2973,8 @@ if(wallet !== undefined) {
                     <AiOutlineClose onClick={() => {
                         setShowModal3(false);
 
-                    }} className={classes.removeIcon} />
-                    <div className={classes.modalCont}>
+                    }} className="removeIcon" />
+                    <div className="modalCont">
 
 
 
@@ -3016,7 +3016,7 @@ if(wallet !== undefined) {
 
             {(approved && !newTransactionBool && !loading && balanceBoolETH && balanceBoolstETH && validBoolETH && validBoolstETH) &&
 
-                <button className={classes.lonerButton} onClick={Deposit}>Deposit</button>
+                <button className="lonerButton" onClick={Deposit}>Deposit</button>
 
             }
 
@@ -3029,7 +3029,7 @@ if(wallet !== undefined) {
 
 
 
-            <div className={classes.error}><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
+            <div className="error"><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
 
 
 

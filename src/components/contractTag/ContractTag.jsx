@@ -39,7 +39,7 @@ const ContractTag = () => {
   }, [copied]);
 
   return (
-    <div className={classes.container}>
+    <div className={classes.containerForTag}>
       <div className={classes.addressTextClass}>
         Contract:
         <p id="addressText" className={classes.addressText} aria-disabled>{address}</p>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import classes from "./table.module.css"
-import { createPublicClient, http, webSocket, decodeEventLog } from 'viem';
-import { mainnet, foundry, goerli } from 'viem/chains';
-import abi from "../../abi/stETH2rETH.json"
+import "./table.css"
+import { createPublicClient, http} from 'viem';
+import { mainnet} from 'viem/chains';
+
 
 import { ethers } from "ethers";
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
@@ -12,13 +12,13 @@ import {
 
 } from '../uniTest/libs/providers.ts'
 
-import { Address, publicActions, createWalletClient, walletActions, custom, decodeFunctionData, decodeFunctionResult, parseEther, formatEther } from 'viem';
+import { formatEther } from 'viem';
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
 import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json'
 
 
-const transport = webSocket('wss://eth-mainnet.g.alchemy.com/v2/iXYPKPNVzY3OKROW2emJzNoE3ooToaRa');
+
 
 
 
@@ -32,7 +32,7 @@ const Table = ({ onDataFromChild }) => {
 
   const apiKey = process.env.REACT_APP_API_KEY;
 
-  const [allTransactions, setAllTransactions] = useState<Array<object>>([])
+  const [allTransactions, setAllTransactions] = useState<Array<Log>>([])
   const [rebateTotal, setRebateTotal] = useState(0)
   const [USDCquote, setUSDCquote] = useState<number>(0)
   const [newTransactions, setNewTransactions] = useState<Array<Log>>([]);
@@ -47,18 +47,7 @@ const Table = ({ onDataFromChild }) => {
 
 
 
-  function convertBigIntToJSON(obj) {
-    if (typeof obj === 'bigint') {
-      return obj.toString();
-    } else if (Array.isArray(obj)) {
-      return obj.map(convertBigIntToJSON);
-    } else if (typeof obj === 'object') {
-      for (const key in obj) {
-        obj[key] = convertBigIntToJSON(obj[key]);
-      }
-    }
-    return obj;
-  }
+
 
 
   function roundToTwoDecimalPlaces(number) {
@@ -84,9 +73,12 @@ const Table = ({ onDataFromChild }) => {
     // Convert the timestamp to milliseconds and create a Date object
     var date = new Date(timestamp * 1000);
 
+    let day;
+    let month;
+
     // Get the day, month, and year
-    var day = date.getDate();
-    var month = date.getMonth() + 1; // Months are zero-based
+    day = date.getDate();
+    month = date.getMonth() + 1; // Months are zero-based
     var year = date.getFullYear();
 
     // Add leading zeros if needed
@@ -229,21 +221,7 @@ const Table = ({ onDataFromChild }) => {
   }, [])
 
 
-  interface Log {
-    txHash: string
-    eventName: string
-    gasUsed: bigint
-    gasPrice: bigint
-    timestamp: string
 
-   
-    args: {
-      ETH: bigint
-      stETH: bigint
-      rETH: bigint
-    }
-    
-  }
 
 
 
@@ -327,6 +305,21 @@ const Table = ({ onDataFromChild }) => {
 
 
 
+  interface Log {
+    eventName: string
+    txHash: string
+    args: {
+      ETH: string
+      stETH: string
+      rETH: string
+    }
+    gasPrice: string
+    gasUsed: string
+    timestamp: string
+
+  }
+
+
   const getEvents = async () => {
 
 
@@ -369,12 +362,12 @@ const Table = ({ onDataFromChild }) => {
 
         console.log(log.gasUsed)
 
-        let newNum = wei((230000 * log.gasPrice) - (log.gasUsed * log.gasPrice)) * USDCquote;
+        let newNum = wei((230000 * Number(log.gasPrice)) - (Number(log.gasUsed) * Number(log.gasPrice))) * USDCquote;
         total = total + newNum;
 
       } else {
 
-        let newNum = wei((117000 * log.gasPrice) - (log.gasUsed * log.gasPrice)) * USDCquote;
+        let newNum = wei((117000 * Number(log.gasPrice)) - (Number(log.gasUsed) * Number(log.gasPrice))) * USDCquote;
         total = total + newNum;
 
       }
@@ -428,7 +421,7 @@ const Table = ({ onDataFromChild }) => {
 
 
   return (
-    <table className={classes.container}>
+    <table className="containerForTable">
 
       <thead>
         <tr>
@@ -455,7 +448,7 @@ const Table = ({ onDataFromChild }) => {
           <tr key={"row" + index}  >
 
 
-            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id={classes.eventName}>{trans.eventName}</td>
+            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id="eventName">{trans.eventName}</td>
 
 
 
@@ -466,11 +459,11 @@ const Table = ({ onDataFromChild }) => {
 
 
             {trans.args["stETH"] !== "0" ?
-              (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((230000 * trans.gasPrice) - (trans.gasUsed * trans.gasPrice))) * USDCquote)} </td>) :
-              (<td className={classes.specialTD}> ${roundToTwoDecimalPlaces((wei((117000 * trans.gasPrice) - (trans.gasUsed * trans.gasPrice))) * USDCquote)} </td>)
+              (<td className="specialTD"> ${roundToTwoDecimalPlaces((wei((230000 * Number(trans.gasPrice)) - (Number(trans.gasUsed) * Number(trans.gasPrice)))) * USDCquote)} </td>) :
+              (<td className="specialTD"> ${roundToTwoDecimalPlaces((wei((117000 * Number(trans.gasPrice)) - (Number(trans.gasUsed) * Number(trans.gasPrice)))) * USDCquote)} </td>)
             }
 
-            <td>{roundToFiveDecimalPlaces(wei(trans.gasPrice * trans.gasUsed))}</td>
+            <td>{roundToFiveDecimalPlaces(wei(Number(trans.gasPrice) * Number(trans.gasUsed)))}</td>
 
             <td>{convertTimestampToDate(trans.timestamp)}</td>
 
