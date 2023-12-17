@@ -103,8 +103,7 @@ function Main({ TOTAL1 }) {
     const [depositSuccess, setDepositSuccess] = useState(false);
     const [routeGenerated, setRouteGenerated] = useState(false);
     const [timeForEstimates, setTimeForEstimates] = useState(false);
-    const [gasPrice, setGasPrice] = useState<bigint>(BigInt(0))
-    const [ETHprice, setETHprice] = useState("");
+    const [gasPrice, setGasPrice] = useState<bigint>(BigInt(0));
     const [rETHSavingsToETH, setrETHSavingsToETH] = useState<BigInt>()
     const [USDCquote, setUSDCquote] = useState<number>()
     const [baseFee, setBaseFee] = useState<bigint>(BigInt(0))
@@ -165,34 +164,7 @@ function Main({ TOTAL1 }) {
     const geckoApiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd";
 
 
-    const handleETHprice = () => {
-
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-
-                // Handle the data here
-
-                setETHprice(data.USD)
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-
-
-    }
-
-    useEffect(() => {
-
-
-        const timeoutId = setTimeout(handleETHprice, 6000);
-
-        return () => clearTimeout(timeoutId);
-
-
-
-
-    }, [ETHprice])
+  
 
 
     function roundToTwoDecimalPlaces(number) {
@@ -653,11 +625,31 @@ let ETHAmount
             console.log(e)
             setApproved(false)
             setTimeForEstimates(false);
-            setIsReadyToApprove(false);
 
-            if (depositPeriod === false || !balanceBoolETH || !balanceBoolstETH) {
-                setErrorMessage("This deposit will revert. Try a smaller amount(s) to match the rETH balance of the Rocket Rebate contract.")
+            if(isReadyToApprove) {
+
+
+                setErrorMessage("")
+
+
+
+
+
+            } else {
+            
+
+            if (depositPeriod === false || !balanceBoolETH || !balanceBoolstETH || !validBoolstETH || !validBoolETH  ) {
+                setErrorMessage("This deposit will revert. Check the contract balance.")
+               
+
             }
+
+            if( ETH !== BigInt(0)) {
+                setErrorMessage("")
+            }
+
+
+        }
 
 
         }
@@ -707,7 +699,7 @@ let ETHAmount
 
         if (allowance < stETH) {
 
-            if (stETH !== BigInt(0) && stETHstring !== "" && stETHstring !== " " && stETHChecked) {
+            if (stETH !== BigInt(0) && stETHstring !== "" && stETHstring !== " " && stETHChecked && validBoolETH ) {
                 setApproved(false);
                 setIsReadyToApprove(true);
                 setTimeForEstimates(false);
@@ -1451,7 +1443,7 @@ let ETHAmount
 
             allowanceCheck();
 
-
+console.log("LIKE YOU THOUGHT");
 
             setBalanceBoolstETH(true)
 
@@ -1516,6 +1508,8 @@ let ETHAmount
 
             estimateGas();
             setBalanceBoolETH(true)
+
+            setErrorMessage2("")
             
 
 
@@ -1546,6 +1540,11 @@ let ETHAmount
 
 
 
+
+            } else {
+
+
+                setErrorMessage2("")
 
             }
 
@@ -1879,6 +1878,9 @@ if(wallet !== undefined) {
     useEffect(() => {
 
 
+        console.log("AND THERE!")
+
+
         if(stETH !== BigInt(0)) {
         balanceCheckStETH();
         }
@@ -1894,6 +1896,9 @@ if(wallet !== undefined) {
 
 
 
+        } else {
+            setApproved(false);
+            setTimeForEstimates(false);
         }
 
 
@@ -1962,6 +1967,8 @@ if(wallet !== undefined) {
                             setETH(parseEther(newETH));
                             setValidBoolETH(true);
 
+                            console.log("NOW HERE");
+
 
                             if (!balanceBoolstETH) {
 
@@ -1985,6 +1992,7 @@ if(wallet !== undefined) {
                             setApproved(false)
                             setTimeForEstimates(false)
                             setValidBoolETH(false);
+                            console.log("total check");
 
                         }
                     }
@@ -2029,10 +2037,12 @@ if(wallet !== undefined) {
             else {
 
                 setErrorMessage2("You have not input a number.");
-                setETHChecked(false);
-                setETH(BigInt(0))
+              setETH(BigInt(0))
+              setETHChecked(false);
                 setApproved(false)
                 setTimeForEstimates(false)
+                setValidBoolETH(false);
+                console.log("HERE.")
 
 
 
@@ -2110,8 +2120,22 @@ if(wallet !== undefined) {
 
 
     const evalString = (inputString) => {
+
+        const lastCode = inputString[inputString.length -1];
+
+        console.log("Last code:" + lastCode)
+
+        if (lastCode === "0") {
+
+            return true;
+
+
+        }
+
         for (let i = 0; i < inputString.length; i++) {
             const charCode = inputString.charCodeAt(i);
+
+            
             if (
                 (charCode >= 65 && charCode <= 90) || // Uppercase letters (A-Z)
                 (charCode >= 97 && charCode <= 122) || // Lowercase letters (a-z)
@@ -2119,13 +2143,12 @@ if(wallet !== undefined) {
                     charCode !== 46 && charCode !== 48 && charCode !== 49) || // Exclude '.' (46), '0' (48), and '1' (49)
                 (charCode >= 58 && charCode <= 64) ||  // More symbols (: to @)
                 (charCode >= 91 && charCode <= 96) ||  // Even more symbols ([ to `)
-                (charCode >= 123 && charCode <= 126) || (charCode === 32) || (charCode === "0.0000000000000000000000000000") || (charCode <= "0.000000000000000000000000000")
-                || (charCode <= "0.00000000000000000000000000") || (charCode <= "0.0000000000000000000000000") || (charCode <= "0.000000000000000000000000") || (charCode <= "0.00000000000000000000000") || (charCode <= "0.0000000000000000000000") || (charCode <= "0.000000000000000000000") || (charCode <= "0.00000000000000000000") || (charCode <= "0.0000000000000000000") || (charCode <= "0.000000000000000000") || (charCode <= "0.00000000000000000") || (charCode <= "0.0000000000000000") || (charCode <= "0.000000000000000") || (charCode <= "0.00000000000000") || (charCode <= "0.0000000000000") || (charCode <= "0.000000000000") || (charCode <= "0.00000000000") || (charCode <= "0.0000000000") || (charCode <= "0.000000000") || (charCode <= "0.00000000") || (charCode <= "0.0000000") || (charCode <= "0.000000") || (charCode <= "0.00000") || (charCode <= "0.0000") || (charCode <= "0.000")
-                || (charCode <= "0.00") || (charCode <= "0.0")   // Some more symbols ({ to ~)
+                (charCode >= 123 && charCode <= 126) || (charCode === 32)   // Some more symbols ({ to ~)
             ) {
                 return true; // Found a letter or symbol.
             }
         }
+    
         return false;
     }
 
@@ -2142,11 +2165,12 @@ if(wallet !== undefined) {
         setStETHstring(newStETH);
         let stEthCheck;
         setErrorMessage("")
+        
 
         setGoForEth(false);
        
     
-
+      
         
 
 
@@ -2181,6 +2205,8 @@ if(wallet !== undefined) {
             if (evalString(newStETH) === false) {
 
                 stEthCheck = parseEther(newStETH)
+
+
 
 
                 if (typeof stEthCheck === 'bigint') {
@@ -2232,8 +2258,9 @@ if(wallet !== undefined) {
                             setStETHChecked(false);
                             setIsReadyToApprove(false);
                             setApproved(false);
-                            setTimeForEstimates(false)
+                            setTimeForEstimates(false);
                             setValidBoolstETH(false);
+                            
 
                         }
 
@@ -2264,7 +2291,6 @@ if(wallet !== undefined) {
                 setErrorMessage("You have not input a valid number.");
                 setFinalGas(BigInt(0));
                 setIsReadyToApprove(false);
-                setStETHChecked(false);
                 setStETH(BigInt(0))
                 setTimeForEstimates(false)
                 setValidBoolstETH(false);
