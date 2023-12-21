@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { AiOutlineClose } from 'react-icons/ai'
 
@@ -20,7 +20,7 @@ import { TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { CurrentConfig } from '../uniTest/libs/config.ts'
 import { fromReadableAmount } from '../uniTest/libs/conversion.ts'
 import { ethers } from "ethers";
-import UniAbi from  "../uniTest/libs/UniAbi.json"
+import UniAbi from "../uniTest/libs/UniAbi.json"
 import {
     AlphaRouter,
     SwapOptionsSwapRouter02,
@@ -56,7 +56,7 @@ function Main({ TOTAL1 }) {
 
     const apiKey = process.env.REACT_APP_API_KEY;
 
-   
+
 
     const [account, setAccount] = useState<Address>();
     const [foundryAccount, setFoundryAccount] = useState<Address>()
@@ -73,8 +73,12 @@ function Main({ TOTAL1 }) {
     const [approvalReceipt, setApprovalReceipt] = useState<TransactionReceipt>();
     const [errorMessage, setErrorMessage] = useState<string | undefined>("")
     const [errorMessage2, setErrorMessage2] = useState<string | undefined>("")
+
+    const [errorMessage3, setErrorMessage3] = useState<string>("")
+    const [errorMessage4, setErrorMessage4] = useState<string>("")
+
     const [gas, setGas] = useState<bigint>(BigInt(0))
-    const [finalGas, setFinalGas] = useState<bigint >(BigInt(0))
+    const [finalGas, setFinalGas] = useState<bigint>(BigInt(0))
 
     const [initialised, setInitialised] = useState<boolean>(false)
     const [newTransactionBool, setNewTransactionBool] = useState(false)
@@ -136,24 +140,24 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
 
 
-        if(goForEth === true) {
-             balanceCheck();
+        if (goForEth === true && ETH !== BigInt(0)) {
+            balanceCheck();
 
         }
 
-       
+
 
     }, [goForEth])
 
     useEffect(() => {
 
 
-        if(goForstEth === true) {
-             balanceCheckStETH();
+        if (goForstEth === true) {
+            balanceCheckStETH();
 
         }
 
-       
+
 
     }, [goForstEth])
 
@@ -164,7 +168,7 @@ function Main({ TOTAL1 }) {
     const geckoApiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd";
 
 
-  
+
 
 
     function roundToTwoDecimalPlaces(number) {
@@ -277,7 +281,7 @@ function Main({ TOTAL1 }) {
 
 
 
-   
+
 
 
 
@@ -304,7 +308,7 @@ function Main({ TOTAL1 }) {
 
         setGasPrice(newPrice)
 
-       
+
 
 
     }
@@ -372,11 +376,11 @@ function Main({ TOTAL1 }) {
 
 
 
-if(block.baseFeePerGas !== null){
+        if (block.baseFeePerGas !== null) {
 
-        setBaseFee(block.baseFeePerGas);
+            setBaseFee(block.baseFeePerGas);
 
-}
+        }
 
 
 
@@ -433,15 +437,41 @@ if(block.baseFeePerGas !== null){
         let numrETH = Number(estReth)
 
 
+        let TOTAL = stETH + ETH;
+
+
+        let rETHAmount;
+
+
+        rETHAmount = await client.readContract({
+            address: rETHcontract,
+            abi: rETHabi,
+            functionName: 'getRethValue',
+            args: [TOTAL]
+        })
+
+
+
 
         setrETHContractBalance(speshString);
 
 
+        console.log("Spesh:" + spesh);
+        console.log("rETH amount:" + rETHAmount)
 
 
 
-        if (spesh >= numrETH) {
+        let weirETH = wei(Number(rETHAmount));
 
+
+
+        if (spesh >= weirETH) {
+
+
+            console.log("AT THIS SPOT")
+
+
+            setErrorMessage4("")
 
 
 
@@ -450,12 +480,12 @@ if(block.baseFeePerGas !== null){
 
 
         } else {
-            if (depositPeriod === false) {
-                setErrorMessage("Not enough rETH in the Rocket Rebate contract. Please enter different values.")
-                setApproved(false);
-                setIsReadyToApprove(false);
-                setTimeForEstimates(false);
-            }
+
+            setErrorMessage4("Not enough rETH in the Rocket Rebate contract. Please enter different values.")
+            setApproved(false);
+            setIsReadyToApprove(false);
+            setTimeForEstimates(false);
+
 
 
         }
@@ -488,7 +518,7 @@ if(block.baseFeePerGas !== null){
 
 
 
-let ETHAmount
+        let ETHAmount
 
 
 
@@ -537,7 +567,7 @@ let ETHAmount
 
 
         let TOTAL = stETH + ETH;
-      
+
 
 
 
@@ -547,76 +577,76 @@ let ETHAmount
         try {
 
 
-            if(account !== undefined) {
+            if (account !== undefined) {
 
-            const result = await client.estimateContractGas({
-                abi: stETH2rETHabi,
-                args: [stETH],
-                address: stETH2rETH,
-                functionName: 'deposit',
-                account: account,
-                value: ETH
-            })
-
-
-            let finGas = result;
+                const result = await client.estimateContractGas({
+                    abi: stETH2rETHabi,
+                    args: [stETH],
+                    address: stETH2rETH,
+                    functionName: 'deposit',
+                    account: account,
+                    value: ETH
+                })
 
 
-       
-
-
-            setGas(finGas);
-
-
-            let rETHAmount;
-
-
-             rETHAmount = await client.readContract({
-                address: rETHcontract,
-                abi: rETHabi,
-                functionName: 'getRethValue',
-                args: [TOTAL]
-            })
-
-            //const rETH = wei(parseInt(rETHAmount));
-
-            retrieveCurrentGasPrice();
-
-            let finrETH = bigIntToString(rETHAmount)
-
-
-
-            let formatrETH = wei(finrETH);
+                let finGas = result;
 
 
 
 
 
-            let rETHwithFee = Number(formatEther(rETHAmount));
+                setGas(finGas);
 
 
-            let defray = (1000000 * Number(formatEther(baseFee)) * (Number(formatEther(ETH)) + Number(formatEther(stETH)))) / wei(32);
+                let rETHAmount;
+
+
+                rETHAmount = await client.readContract({
+                    address: rETHcontract,
+                    abi: rETHabi,
+                    functionName: 'getRethValue',
+                    args: [TOTAL]
+                })
+
+                //const rETH = wei(parseInt(rETHAmount));
+
+                retrieveCurrentGasPrice();
+
+                let finrETH = bigIntToString(rETHAmount)
+
+
+
+                let formatrETH = wei(finrETH);
 
 
 
 
 
-            let actualReth = wei(Number(rETHAmount) - defray);
+                let rETHwithFee = Number(formatEther(rETHAmount));
 
-            setEstReth(actualReth.toString());
 
-         if(   balanceBoolstETH && validBoolstETH) {
-
-            setErrorMessage("")
+                let defray = (1000000 * Number(formatEther(baseFee)) * (Number(formatEther(ETH)) + Number(formatEther(stETH)))) / wei(32);
 
 
 
-         }
-           
-               
 
 
-        }
+                let actualReth = wei(Number(rETHAmount) - defray);
+
+                setEstReth(actualReth.toString());
+
+                if (balanceBoolstETH && validBoolstETH) {
+
+                    setErrorMessage("")
+
+
+
+                }
+
+
+
+
+            }
 
 
 
@@ -626,30 +656,29 @@ let ETHAmount
             setApproved(false)
             setTimeForEstimates(false);
 
-            if(isReadyToApprove) {
 
-
-                setErrorMessage("")
-
+            console.log("is ready?:" + isReadyToApprove)
 
 
 
 
-            } else {
-            
+            if (depositPeriod === false || !balanceBoolETH || !balanceBoolstETH || !validBoolETH) {
+                setErrorMessage3("This deposit will revert. Check the contract balance and remove all invalid values.")
+            }
 
-            if (depositPeriod === false || !balanceBoolETH || !balanceBoolstETH || !validBoolstETH || !validBoolETH  ) {
-                setErrorMessage("This deposit will revert. Check the contract balance.")
-               
+            if(depositPeriod === true) {
+                setErrorMessage3("")
 
             }
 
-            if( ETH !== BigInt(0)) {
-                setErrorMessage("")
+
+            if (!approved) {
+                setErrorMessage3("")
             }
 
 
-        }
+
+
 
 
         }
@@ -699,7 +728,7 @@ let ETHAmount
 
         if (allowance < stETH) {
 
-            if (stETH !== BigInt(0) && stETHstring !== "" && stETHstring !== " " && stETHChecked && validBoolETH ) {
+            if (stETH !== BigInt(0) && stETHstring !== "" && stETHstring !== " " && stETHChecked && validBoolETH) {
                 setApproved(false);
                 setIsReadyToApprove(true);
                 setTimeForEstimates(false);
@@ -1327,7 +1356,7 @@ let ETHAmount
         } catch (e) {
             setLoading(false);
             alert(e)
-            setErrorMessage("")
+
         }
 
 
@@ -1340,7 +1369,7 @@ let ETHAmount
     useEffect(() => {
         ; (async () => {
             if (approvalHash) {
-                const receipt = await client.waitForTransactionReceipt({ hash: approvalHash  as `0x${string}` })
+                const receipt = await client.waitForTransactionReceipt({ hash: approvalHash as `0x${string}` })
                 setApprovalReceipt(receipt)
 
 
@@ -1354,7 +1383,7 @@ let ETHAmount
 
                     allowanceCheck();
                     setErrorMessage2("")
-                    
+
 
                     setLoading(false);
 
@@ -1443,7 +1472,7 @@ let ETHAmount
 
             allowanceCheck();
 
-console.log("LIKE YOU THOUGHT");
+            console.log("LIKE YOU THOUGHT");
 
             setBalanceBoolstETH(true)
 
@@ -1489,7 +1518,7 @@ console.log("LIKE YOU THOUGHT");
 
 
         const balance = await client.getBalance({
-            address: account  as `0x${string}`,
+            address: account as `0x${string}`,
 
         })
 
@@ -1500,7 +1529,7 @@ console.log("LIKE YOU THOUGHT");
 
         if (ETH <= balance && ETH > 0 && !isReadyToApprove) {
 
-           
+
 
 
             setApproved(true)
@@ -1510,7 +1539,7 @@ console.log("LIKE YOU THOUGHT");
             setBalanceBoolETH(true)
 
             setErrorMessage2("")
-            
+
 
 
 
@@ -1562,10 +1591,10 @@ console.log("LIKE YOU THOUGHT");
 
 
 
-let rETHAmount
+        let rETHAmount
 
 
-       rETHAmount = await client.readContract({
+        rETHAmount = await client.readContract({
             address: rETHcontract,
             abi: rETHabi,
             functionName: 'balanceOf',
@@ -1614,27 +1643,27 @@ let rETHAmount
 
 
 
-if(wallet !== undefined) {
+            if (wallet !== undefined) {
 
-            setErrorMessage("");
-            setErrorMessage2("");
+                setErrorMessage("");
+                setErrorMessage2("");
 
-        
 
-            const result = await wallet.writeContract(
-                {
-                    account,
-                    address: stETH2rETH,
-                    abi: stETH2rETHabi,
-                    functionName: 'deposit',
-                    args: [stETH],
-                    value: ETH
 
-                }
-            )
-            setHash(result)
+                const result = await wallet.writeContract(
+                    {
+                        account,
+                        address: stETH2rETH,
+                        abi: stETH2rETHabi,
+                        functionName: 'deposit',
+                        args: [stETH],
+                        value: ETH
 
-}
+                    }
+                )
+                setHash(result)
+
+            }
 
 
 
@@ -1680,7 +1709,7 @@ if(wallet !== undefined) {
         ; (async () => {
             if (hash) {
 
-                const receipt = await client.waitForTransactionReceipt({ hash: hash  as `0x${string}` })
+                const receipt = await client.waitForTransactionReceipt({ hash: hash as `0x${string}` })
                 setReceipt(receipt)
 
 
@@ -1777,29 +1806,29 @@ if(wallet !== undefined) {
             let newWallet;
 
 
-            if(window.ethereum !== undefined) {
+            if (window.ethereum !== undefined) {
 
 
-            newWallet = await createWalletClient({
-                chain: mainnet,
-                transport: custom(window.ethereum)
-            })
+                newWallet = await createWalletClient({
+                    chain: mainnet,
+                    transport: custom(window.ethereum)
+                })
 
-            setWallet(newWallet);
-
-
-
-            const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' })
+                setWallet(newWallet);
 
 
 
-            setAccount(address)
+                const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' })
 
 
-            setLoading(false)
+
+                setAccount(address)
 
 
-        }
+                setLoading(false)
+
+
+            }
 
 
 
@@ -1826,15 +1855,15 @@ if(wallet !== undefined) {
 
 
         try {
-         
+
 
             window.location.reload();
-            
-             
-                
 
 
-         
+
+
+
+
 
         } catch (e) {
 
@@ -1881,11 +1910,14 @@ if(wallet !== undefined) {
         console.log("AND THERE!")
 
 
-        if(stETH !== BigInt(0)) {
-        balanceCheckStETH();
+        if (stETH !== BigInt(0)) {
+            balanceCheckStETH();
         }
 
         setErrorMessage2("")
+
+
+        getContractBalance();
 
 
 
@@ -1967,6 +1999,7 @@ if(wallet !== undefined) {
                             setETH(parseEther(newETH));
                             setValidBoolETH(true);
 
+
                             console.log("NOW HERE");
 
 
@@ -2037,8 +2070,8 @@ if(wallet !== undefined) {
             else {
 
                 setErrorMessage2("You have not input a number.");
-              setETH(BigInt(0))
-              setETHChecked(false);
+                setETH(BigInt(0))
+                setETHChecked(false);
                 setApproved(false)
                 setTimeForEstimates(false)
                 setValidBoolETH(false);
@@ -2070,9 +2103,15 @@ if(wallet !== undefined) {
     useEffect(() => {
 
 
+if(ETH !== BigInt(0)) {
+    balanceCheck();
 
-        balanceCheck();
+}
+       
         setErrorMessage("")
+
+
+        getContractBalance();
 
 
 
@@ -2121,7 +2160,7 @@ if(wallet !== undefined) {
 
     const evalString = (inputString) => {
 
-        const lastCode = inputString[inputString.length -1];
+        const lastCode = inputString[inputString.length - 1];
 
         console.log("Last code:" + lastCode)
 
@@ -2135,7 +2174,7 @@ if(wallet !== undefined) {
         for (let i = 0; i < inputString.length; i++) {
             const charCode = inputString.charCodeAt(i);
 
-            
+
             if (
                 (charCode >= 65 && charCode <= 90) || // Uppercase letters (A-Z)
                 (charCode >= 97 && charCode <= 122) || // Lowercase letters (a-z)
@@ -2148,7 +2187,7 @@ if(wallet !== undefined) {
                 return true; // Found a letter or symbol.
             }
         }
-    
+
         return false;
     }
 
@@ -2165,13 +2204,13 @@ if(wallet !== undefined) {
         setStETHstring(newStETH);
         let stEthCheck;
         setErrorMessage("")
-        
+
 
         setGoForEth(false);
-       
-    
-      
-        
+
+
+
+
 
 
         setApproved(false)
@@ -2181,16 +2220,16 @@ if(wallet !== undefined) {
             setStETHChecked(false);
             setStETH(BigInt(0))
             setBalanceBoolstETH(true);
-           
+
 
 
             setGoForEth(true);
-           
+
 
 
             setIsReadyToApprove(false)
             setValidBoolstETH(true);
-            
+
 
 
 
@@ -2260,7 +2299,7 @@ if(wallet !== undefined) {
                             setApproved(false);
                             setTimeForEstimates(false);
                             setValidBoolstETH(false);
-                            
+
 
                         }
 
@@ -2514,7 +2553,7 @@ if(wallet !== undefined) {
                     }
 
 
-                    <div className="error2"><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
+                    <div className="error2"><p>{errorMessage2}</p><p>{errorMessage}</p> <p>{errorMessage3}</p> <p>{errorMessage4}</p> </div>
 
 
 
@@ -3055,7 +3094,7 @@ if(wallet !== undefined) {
 
 
 
-            <div className="error"><p>{errorMessage2}</p><p>{errorMessage}</p>  </div>
+            <div className="error"><p>{errorMessage2}</p><p>{errorMessage}</p> <p>{errorMessage3}</p> <p>{errorMessage4}</p> </div>
 
 
 

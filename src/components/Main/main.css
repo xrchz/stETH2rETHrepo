@@ -356,7 +356,7 @@
   .error {
     font-size: 24px;
     padding: 0.5vh 0;
-    padding-top: 3vh;
+    padding: 5vh;
     height:auto;
     width: 80%;
     font-weight: 600;
