@@ -7,17 +7,28 @@ const Feedback = () => {
     const email = "Gromandniblet@gmail.com";
 
 
-    const handleDefault = (e) => {
-        e.preventDefault();
-    }
+    const handleSubmit = (event) => {
+        event.preventDefault();
+      
+        const myForm = event.target;
+        const formData = new FormData(myForm);
+        
+        fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(formData).toString(),
+        })
+          .then(() => console.log("Form successfully submitted"))
+          .catch((error) => alert(error));
+      };
 
 
     return (
         <div className={classes.container}>
-            <form name="contact" method="POST"  onSubmit={(e) => {handleDefault(e)}} data-netlify="true">
+            <form name="contact" method="post"  data-netlify="true" onSubmit="submit">
                 <h3>Report bug to Rocket Rebate</h3>
-                <input type="hidden" name="subject"
-                    value="Bug report from frank.b.mchugh@gmail.com" />
+                <input type="hidden" name="form-name"
+                    value="contact" />
                 <p>
                     <label>Your Name: <input type="text" name="name" /></label>
                 </p>
@@ -25,7 +36,7 @@ const Feedback = () => {
                     <label>Your Email: <input type="email" name="email" /></label>
                 </p>
                 <p>
-                    <label>Message: <textarea className={classes.textarea} name="message"></textarea></label>
+                    <label>Message: <textarea className={classes.textarea} name="message"/></label>
                 </p>
                 <p>
                     <button type="submit">Send</button>

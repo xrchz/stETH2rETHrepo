@@ -125,7 +125,6 @@ function Main({ TOTAL1,   onClickFunc  }) {
     const [total, setTotal] = useState(0)
     const [goForEth, setGoForEth] = useState(false);
     const [goForstEth, setGoForstEth] = useState(false);
-
     const [isActive, setIsActive] = useState(true);
 
     useEffect(() => {

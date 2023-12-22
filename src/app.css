@@ -1,7 +1,12 @@
+
+
 * {
   margin: 0;
   padding: 0;
+  
 }
+
+
 
 .app {
 
@@ -10,7 +15,7 @@
   height: auto;
 
 
-  min-height: 100vh;
+  min-height: 120vh;
   display: flex;
 padding-bottom: 8vh;
   align-items: center;

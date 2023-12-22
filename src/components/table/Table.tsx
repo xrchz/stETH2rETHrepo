@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import "./table.css"
-import { createPublicClient, http} from 'viem';
-import { mainnet} from 'viem/chains';
+import { createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
 
 
 import { ethers } from "ethers";
@@ -102,15 +102,15 @@ const Table = ({ onDataFromChild }) => {
     try {
       // Using Axios to make the request
       const response = await fetch(apiUrl);
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       // Assuming the API response is an array of objects
       const data = await response.json();
       console.log("This is the response:", data);
-  
+
       setNewTransactions(data);
       return data;
     } catch (error) {
@@ -426,13 +426,13 @@ const Table = ({ onDataFromChild }) => {
       <thead>
         <tr>
 
-         
 
 
-          <th>Ethereum (Deposit)</th>
-          <th>stETH (Deposit)</th>
-          <th>rETH (Returned)</th>
           <th>Event Type</th>
+          <th>Ethereum</th>
+          <th>stETH</th>
+          <th>rETH </th>
+
           <th>Estimated Rebate</th>
           <th>Transaction Cost</th>
 
@@ -449,15 +449,15 @@ const Table = ({ onDataFromChild }) => {
           <tr key={"row" + index}  >
 
 
-          
 
 
 
 
+            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id="eventName">{trans.eventName}</td>
             <td>{roundToFiveDecimalPlaces(wei(trans.args["ETH"]))}</td>
             <td>{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["stETH"])) : "N/A"}</td>
             <td >{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["rETH"])) : "N/A"}</td>
-            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id="eventName">{trans.eventName}</td>
+
 
             {trans.args["stETH"] !== "0" ?
               (<td className="specialTD"> ${roundToTwoDecimalPlaces((wei((230000 * Number(trans.gasPrice)) - (Number(trans.gasUsed) * Number(trans.gasPrice)))) * USDCquote)} </td>) :
