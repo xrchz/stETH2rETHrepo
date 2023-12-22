@@ -5,6 +5,7 @@ import { AiFillCopy, AiOutlineCheck } from "react-icons/ai";
 const ContractTag = () => {
   const [address, setAddress] = useState("0xfAaBbE302750635E3F918385a1aEb4A9eb45977a");
   const [copied, setCopied] = useState(false);
+  const [styles, setStyles] = useState({opacity: "0"})
 
   const handleCopyClick = () => {
     // Create a reference to the text element
@@ -38,14 +39,45 @@ const ContractTag = () => {
     return () => clearTimeout(timeoutId);
   }, [copied]);
 
+
+  const changeStyles = () => {
+
+   
+
+      setStyles({opacity: "1"});
+      console.log("Change works!")
+
+
+   
+ 
+
+  }
+
+  const revertStyles = () => {
+
+
+    setStyles({opacity: "0"});
+    console.log("Revert works!")
+
+  }
+
   return (
     <div className={classes.containerForTag}>
       <div className={classes.addressTextClass}>
         Contract:
         <p id="addressText" className={classes.addressText} aria-disabled>{address}</p>
 
-        {!copied && <AiFillCopy className={classes.icon} onClick={handleCopyClick} />}
-        {copied && <AiOutlineCheck />}
+
+
+        {!copied && <div className={classes.addressCont} >
+
+          <div className={classes.addressAbso} style={styles}><span>Copy Address</span></div>
+          <AiFillCopy className={classes.icon}  onClick={handleCopyClick}  onMouseEnter={changeStyles} onMouseLeave={revertStyles}/>
+        </div>}
+        {copied && <div className={classes.addressCont} >
+        <div className={classes.addressAbso} style={styles}><span>Copied!</span></div>
+          <AiOutlineCheck onMouseEnter={changeStyles} onMouseLeave={revertStyles} />
+        </div>}
       </div>
     </div>
   );

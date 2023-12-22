@@ -69,9 +69,9 @@ function App() {
 
 
 
-<div style={dataFromChild === 0? {display: "none", width: "90%"}: {display: "flex", width: "88%"}} >
+{/*<div style={dataFromChild === 0? {display: "none", width: "90%"}: {display: "flex", width: "88%"}} > */}
       <ContractTag  />
-      </div>
+     {/* </div> */}
 
 
       <ClipLoader

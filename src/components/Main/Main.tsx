@@ -126,6 +126,60 @@ function Main({ TOTAL1 }) {
     const [goForEth, setGoForEth] = useState(false);
     const [goForstEth, setGoForstEth] = useState(false);
 
+    const [isActive, setIsActive] = useState(true);
+
+    useEffect(() => {
+        let inactivityTimeout;
+
+        const handleInactivity = () => {
+            setIsActive(false);
+
+        };
+
+        const resetInactivityTimeout = () => {
+            if (inactivityTimeout) {
+                clearTimeout(inactivityTimeout);
+            }
+
+            inactivityTimeout = setTimeout(handleInactivity, 60000);
+        };
+
+        const handleUserActivity = () => {
+            resetInactivityTimeout();
+            setIsActive(true);
+        };
+
+
+        resetInactivityTimeout();
+
+
+        window.addEventListener('mousemove', handleUserActivity);
+        window.addEventListener('keydown', handleUserActivity);
+
+
+        return () => {
+            clearTimeout(inactivityTimeout);
+            window.removeEventListener('mousemove', handleUserActivity);
+            window.removeEventListener('keydown', handleUserActivity);
+        };
+    }, []);
+
+
+
+    useEffect(() => {
+
+
+        if (!isActive) {
+            const timeoutId = setTimeout(disconnect, 500);
+
+        }
+
+
+
+    }, [isActive])
+
+
+
 
 
     useEffect(() => {
@@ -152,7 +206,7 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
 
 
-        if (goForstEth === true) {
+        if (goForstEth === true && stETH !== BigInt(0)) {
             balanceCheckStETH();
 
         }
@@ -250,20 +304,19 @@ function Main({ TOTAL1 }) {
 
     useEffect(() => {
 
-
-
-
-
         if (!depositSuccess) {
 
             const timeoutId = setTimeout(getQuoute, 6000);
 
             return () => clearTimeout(timeoutId);
-
-
         }
 
     }, [USDCquote])
+
+
+
+
+
 
 
 
@@ -666,7 +719,7 @@ function Main({ TOTAL1 }) {
                 setErrorMessage3("This deposit will revert. Check the contract balance and remove all invalid values.")
             }
 
-            if(depositPeriod === true) {
+            if (depositPeriod === true) {
                 setErrorMessage3("")
 
             }
@@ -2103,11 +2156,11 @@ function Main({ TOTAL1 }) {
     useEffect(() => {
 
 
-if(ETH !== BigInt(0)) {
-    balanceCheck();
+        if (ETH !== BigInt(0)) {
+            balanceCheck();
 
-}
-       
+        }
+
         setErrorMessage("")
 
 
