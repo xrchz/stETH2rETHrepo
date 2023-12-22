@@ -34,6 +34,7 @@ padding-bottom: 8vh;
   
   border: 0.5px solid #222;
   border-radius: 10px;
+  margin-bottom: 15vh;
 
 
 }
@@ -76,6 +77,12 @@ padding-bottom: 8vh;
   color: #fff !important;
 
 
+}
+
+
+.feedbackCont {
+  height: auto;
+  width: 100%;
 }
 
 

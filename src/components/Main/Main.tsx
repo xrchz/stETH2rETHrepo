@@ -52,7 +52,7 @@ const override: CSSProperties = {
 
 
 
-function Main({ TOTAL1 }) {
+function Main({ TOTAL1,   onClickFunc  }) {
 
     const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -141,7 +141,7 @@ function Main({ TOTAL1 }) {
                 clearTimeout(inactivityTimeout);
             }
 
-            inactivityTimeout = setTimeout(handleInactivity, 60000);
+            inactivityTimeout = setTimeout(handleInactivity, 600000);
         };
 
         const handleUserActivity = () => {
@@ -1462,7 +1462,7 @@ function Main({ TOTAL1 }) {
 
 
 
-    /*const handleFakestETH = async () => {
+   /* const handleFakestETH = async () => {
 
 
 
@@ -2455,6 +2455,9 @@ function Main({ TOTAL1 }) {
 
 
 
+
+
+
     return (
 
 
@@ -2472,6 +2475,7 @@ function Main({ TOTAL1 }) {
 
             <div className="buttonCont">
                 <button onClick={handleRead}>Read Me</button>
+                <button className="disconnect" onClick={onClickFunc}>Report Bug</button>
 
             </div>
             <div className="wrapper">
@@ -2535,8 +2539,8 @@ function Main({ TOTAL1 }) {
 
 
 
-                    {/*       <button className={classes.foundry} onClick={getFoundry}>CONNECT FOUNDRY</button>
-                    <button className={classes.fakestETH} onClick={handleFakestETH}>Fund Test Account</button> */}
+            {/*             <button className="foundry" onClick={getFoundry}>CONNECT FOUNDRY</button>
+                    <button className="fakestETH" onClick={handleFakestETH}>Fund Test Account</button> */}
 
 
 
@@ -2696,7 +2700,7 @@ function Main({ TOTAL1 }) {
                                                 {depositSuccess ? ("You saved") : ("You will save")}   {
 
                                                     Number(dexGas * gasPrice) - Number(gas * gasPrice) >= 0 ?
-                                                        (<span className="speshSpan2" style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
+                                                        (<span className="speshSpan" style={{ color: "green" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
                                                         : (<span className="speshSpan" style={{ color: "red" }}>{roundToFiveDecimalPlaces(wei(Number(dexGas * gasPrice) - Number(gas * gasPrice)))}</span>)
                                                 } ETH in gas and  {depositSuccess ? ("you earned") : ("you will earn")} {
 

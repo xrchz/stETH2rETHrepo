@@ -1,0 +1,101 @@
+.container {
+    height: auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 3vh 0;
+}
+
+.container > form {
+    height: auto;
+
+    width: 50%;
+    border-radius: 10px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 3vh 0;
+    gap: 2rem;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
+    border: 0.5px solid #222;
+
+}
+
+.container > form > h3 {
+    font-size: 30px;
+    text-align: center;
+    width: 80%;
+    
+    font-weight: 500;
+}
+
+
+
+
+.container > form > p > label {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+
+    width: 100%;
+}
+
+
+.container > form > p >  button {
+  
+    background: rgb(30, 132, 124);
+    color: #fff;
+    font-weight: 200;
+    font-size: 15px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    padding: 12px;
+    transition: all 0.2s ease-in-out;
+    border: 0px;
+  
+  }
+  
+  .container > form > p > button:hover {
+    background: #333 !important;
+    cursor: pointer !important;
+    color: #fff !important;
+  
+  
+  }
+
+.textarea {
+    height: auto;
+    min-height: 200px;
+    width: 200px;
+}
+
+
+
+
+@media (max-width: 700px) {
+
+
+    .container > form  {
+        width: 80%;
+    }
+
+
+
+
+
+
+    .container > form > h3 {
+        font-size: 20px;
+      }
+
+
+    
+   
+        
+  }

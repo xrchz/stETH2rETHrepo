@@ -426,12 +426,13 @@ const Table = ({ onDataFromChild }) => {
       <thead>
         <tr>
 
-          <th>Event Type</th>
+         
 
 
           <th>Ethereum (Deposit)</th>
           <th>stETH (Deposit)</th>
           <th>rETH (Returned)</th>
+          <th>Event Type</th>
           <th>Estimated Rebate</th>
           <th>Transaction Cost</th>
 
@@ -448,7 +449,7 @@ const Table = ({ onDataFromChild }) => {
           <tr key={"row" + index}  >
 
 
-            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id="eventName">{trans.eventName}</td>
+          
 
 
 
@@ -456,7 +457,7 @@ const Table = ({ onDataFromChild }) => {
             <td>{roundToFiveDecimalPlaces(wei(trans.args["ETH"]))}</td>
             <td>{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["stETH"])) : "N/A"}</td>
             <td >{trans.eventName === "Deposit" ? roundToFiveDecimalPlaces(wei(trans.args["rETH"])) : "N/A"}</td>
-
+            <td style={trans.eventName === "Deposit" ? { backgroundColor: "#f8ec85" } : { backgroundColor: "rgb(30, 132, 124)", color: "white" }} id="eventName">{trans.eventName}</td>
 
             {trans.args["stETH"] !== "0" ?
               (<td className="specialTD"> ${roundToTwoDecimalPlaces((wei((230000 * Number(trans.gasPrice)) - (Number(trans.gasUsed) * Number(trans.gasPrice)))) * USDCquote)} </td>) :
