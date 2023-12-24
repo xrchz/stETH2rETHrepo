@@ -36,6 +36,7 @@ async function processLog(log) {
   item.gasUsed = receipt.gasUsed.toString()
   item.gasPrice = receipt.gasPrice.toString()
   item.txHash = receipt.hash
+  item.sender = await provider.lookupAddress(receipt.from) || receipt.from
   const block = await log.getBlock()
   item.timestamp = block.timestamp
   savedLogs.push(item)
@@ -67,7 +68,7 @@ rocketRebate.addListener('Deposit', processNewLog)
 
 const server = http.createServer((req, res) => {
   console.log(`${timestamp()} Serving request from ${req.headers['origin']}`)
-  const ETag = `"${savedLogs.length}"`
+  const ETag = `"${savedLogs.length}v1"`
   res.setHeader('Content-Type', 'application/json')
   res.setHeader('Access-Control-Allow-Origin', 'https://rocketrebate.io')
   res.setHeader('ETag', ETag)
