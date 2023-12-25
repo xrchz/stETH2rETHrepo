@@ -11,7 +11,7 @@ const rocketRebate = new ethers.Contract('0xfAaBbE302750635E3F918385a1aEb4A9eb45
 
 const deployBlock = 18198548
 
-const currentBlockNumber = await provider.getBlockNumber()
+let currentBlockNumber = await provider.getBlockNumber()
 
 const savedLogs = []
 const seenLogs = new Set()
@@ -53,18 +53,25 @@ while (block < currentBlockNumber) {
 }
 
 console.log(`${timestamp()} Sorting ${savedLogs.length} logs`)
-savedLogs.sort((a,b) => a.timestamp - b.timestamp)
+const compareFn = (a,b) => a.timestamp - b.timestamp
+savedLogs.sort(compareFn)
 
-console.log(`${timestamp()} Computing JSON`)
+console.log(`${timestamp()} Computing JSON for ${savedLogs.length}`)
 let savedJson = JSON.stringify(savedLogs)
 
-async function processNewLog(log) {
-  await processLog(log)
-  console.log(`${timestamp()} Recomputing JSON`)
+async function processDeposit(...args) {
+  console.log(`${timestamp()} Got Deposit(${args})`)
+  currentBlockNumber = await provider.getBlockNumber()
+  const logs = await rocketRebate.queryFilter('Deposit', block, currentBlockNumber)
+  console.log(`${timestamp()} Adding ${logs.length} new log${logs.length == 1 ? '' : 's'}...`)
+  for (const log of logs) await processLog(log)
+  block = currentBlockNumber
+  if (logs.length > 1) savedLogs.sort(compareFn)
+  console.log(`${timestamp()} Computing JSON for ${savedLogs.length}`)
   savedJson = JSON.stringify(savedLogs)
 }
 
-rocketRebate.addListener('Deposit', processNewLog)
+rocketRebate.addListener('Deposit', processDeposit)
 
 const server = http.createServer((req, res) => {
   console.log(`${timestamp()} Serving request from ${req.headers['origin']}`)
