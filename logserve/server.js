@@ -60,8 +60,9 @@ console.log(`${timestamp()} Computing JSON for ${savedLogs.length}`)
 let savedJson = JSON.stringify(savedLogs)
 
 async function processDeposit(...args) {
-  console.log(`${timestamp()} Got Deposit(${args})`)
+  console.log(`${timestamp()} Got Deposit(${args.slice(0, 4)})`)
   currentBlockNumber = await provider.getBlockNumber()
+  if (block < currentBlockNumber) block += 1
   const logs = await rocketRebate.queryFilter('Deposit', block, currentBlockNumber)
   console.log(`${timestamp()} Adding ${logs.length} new log${logs.length == 1 ? '' : 's'}...`)
   for (const log of logs) await processLog(log)
